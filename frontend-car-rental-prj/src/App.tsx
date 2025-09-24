@@ -20,7 +20,8 @@ export default function App() {
 
   return (
     <Box p={6}>
-      <Heading size="md" mb={4}>Cars</Heading>
+      <Heading size="md" mb={4}>🚗 🚗 Car Rental System ⚡</Heading>
+      
       {loading ? (
         <Spinner />
       ) : error ? (

@@ -6,7 +6,9 @@ import { Pool } from 'pg'
 
 const app = express()
 app.use(express.json())
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({ 
+  origin: ['http://localhost:5173', 'http://localhost:3001', 'http://localhost'] 
+}))
 
 // create a DB pool (re-uses connections)
 const useSSL = process.env.NODE_ENV === 'production'
