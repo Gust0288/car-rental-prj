@@ -1,5 +1,5 @@
-import { HStack, Image, Button, Text, Spacer } from "@chakra-ui/react";
-import logo from "../assets/logo.webp";
+import { HStack, Button, Text, Input } from "@chakra-ui/react";
+
 
 export const NavBar = () => {
   return (
@@ -13,13 +13,12 @@ export const NavBar = () => {
     >
 
       <HStack spacing={4}>
-        <Image src={logo} boxSize="60px" />
-        <Text fontSize="xl" fontWeight="bold" color="blue.500">
+        <Text fontSize="xl" fontWeight="bold" color="blue.500" whiteSpace="nowrap">
           Car Rental
         </Text>
       </HStack>
 
-      <Spacer />
+      <Input width="100%" placeholder="Search for cars..." mx={10} />
 
       <HStack spacing={4}>
         <Button variant="ghost">Home</Button>

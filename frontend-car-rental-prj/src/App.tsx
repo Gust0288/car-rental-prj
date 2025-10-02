@@ -24,8 +24,8 @@ export default function App() {
   return (
     <Box p={6}>
       <NavBar />
-      <Heading size="md" mb={4}>
-        Cars ddd
+      <Heading size="lg" mb={4}>
+        Cars
       </Heading>
       {loading ? (
         <Spinner />
