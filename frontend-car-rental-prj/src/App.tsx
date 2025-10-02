@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Heading, Spinner, VStack, Text } from "@chakra-ui/react";
 import { getCars } from "./services/cars";
 import type { Car } from "./services/cars";
+import { NavBar } from "./components/Navbar";
 
 export default function App() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -22,6 +23,7 @@ export default function App() {
 
   return (
     <Box p={6}>
+      <NavBar />
       <Heading size="md" mb={4}>
         Cars ddd
       </Heading>
