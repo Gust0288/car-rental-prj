@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Box, Heading, Spinner, Text, Container } from "@chakra-ui/react";
 import { getCars } from "./services/cars";
 import type { Car } from "./services/cars";
-import { NavBar } from "./components/Navbar";
-import { Footer } from "./components/Footer";
-import { CarGrid } from "./components/CarGrid";
+import { NavBar } from "./Components/Navbar";
+import { Footer } from "./Components/Footer";
+import { CarGrid } from "./Components/CarGrid";
 
 export default function App() {
   const [cars, setCars] = useState<Car[]>([]);

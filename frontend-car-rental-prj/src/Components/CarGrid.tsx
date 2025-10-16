@@ -17,7 +17,7 @@ export const CarGrid = ({ cars, onCarClick }: CarGridProps) => {
   return (
     <SimpleGrid 
       columns={{ base: 1, sm: 2, md: 3, lg: 4 }} 
-      spacing={6}
+      gap={6}
       w="100%"
     >
       {cars.map((car) => (
