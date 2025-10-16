@@ -3,6 +3,7 @@ import { Box, Heading, Spinner, VStack, Text } from "@chakra-ui/react";
 import { getCars } from "./services/cars";
 import type { Car } from "./services/cars";
 import { NavBar } from "./components/Navbar";
+import { Footer } from "./components/Footer";
 
 export default function App() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -51,6 +52,7 @@ export default function App() {
           ))}
         </VStack>
       )}
+      <Footer />
     </Box>
   );
 }
