@@ -24,7 +24,7 @@ app.get("/health", async (_req: Request, res: Response) => {
 // get cars
 app.get("/cars", async (_req: Request, res: Response) => {
   const { rows } = await pool.query(
-    "select id, make, model from public.cars order by id asc"
+    "select id, make, model, img_path from public.cars order by id asc"
   );
   res.json(rows);
 });
