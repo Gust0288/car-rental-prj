@@ -12,7 +12,7 @@ export const NavBar = () => {
       shadow="sm"
     >
 
-      <HStack spacing={4}>
+      <HStack gap={4}>
         <Text fontSize="xl" fontWeight="bold" color="blue.500" whiteSpace="nowrap">
           Car Rental
         </Text>
@@ -20,7 +20,7 @@ export const NavBar = () => {
 
       <Input width="100%" placeholder="Search for cars..." mx={10} />
 
-      <HStack spacing={4}>
+      <HStack gap={4}>
         <Button variant="ghost">Home</Button>
         <Button variant="ghost">Cars</Button>
         <Button variant="ghost">Login</Button>
