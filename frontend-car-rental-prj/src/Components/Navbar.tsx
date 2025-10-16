@@ -1,4 +1,5 @@
-import { HStack, Button, Text, Input } from "@chakra-ui/react";
+import { HStack, Text, Input } from "@chakra-ui/react";
+import { Button } from "./Button";
 
 
 export const NavBar = () => {
@@ -24,7 +25,7 @@ export const NavBar = () => {
         <Button variant="ghost">Home</Button>
         <Button variant="ghost">Cars</Button>
         <Button variant="ghost">Login</Button>
-        <Button colorScheme="blue">Sign Up</Button>
+        <Button variant="primary">Sign Up</Button>
       </HStack>
     </HStack>
   );
