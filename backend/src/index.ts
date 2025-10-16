@@ -1,35 +1,24 @@
 // backend/src/index.ts
-import 'dotenv/config'
-import express, { Request, Response } from 'express'
-import cors from 'cors'
-import { Pool } from 'pg'
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import routes from "./routes/index.js";
+import { setupSwagger } from "./config/swagger.js";
 
-const app = express()
-app.use(express.json())
-app.use(cors({ 
-  origin: ['http://localhost:5173', 'http://localhost:3001', 'http://localhost'] 
-}))
+const app = express();
 
-// create a DB pool (re-uses connections)
-const useSSL = process.env.NODE_ENV === 'production'
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: useSSL ? { rejectUnauthorized: false } : false,
-})
+// Middleware
+app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173" }));
 
-// health
-app.get('/health', async (_req: Request, res: Response) => {
-  const { rows } = await pool.query('select now()')
-  res.json({ ok: true, time: rows[0].now })
-})
+// Setup Swagger documentation
+setupSwagger(app);
 
-// get cars
-app.get('/cars', async (_req: Request, res: Response) => {
-  const { rows } = await pool.query(
-    'select id, brand, model from public.cars order by id asc'
-  )
-  res.json(rows)
-})
+// Routes
+app.use("/", routes);
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`))
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`API running on http://localhost:${PORT}`);
+  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+});

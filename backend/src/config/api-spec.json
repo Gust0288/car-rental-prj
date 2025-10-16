@@ -1,0 +1,409 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Car Rental API",
+    "version": "1.0.0",
+    "description": "A simple Express API for managing car rentals"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "Cars",
+      "description": "Car management endpoints"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Returns the current server status and timestamp",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheck"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cars": {
+      "get": {
+        "summary": "Get all cars",
+        "description": "Retrieve a list of all cars in the database",
+        "tags": ["Cars"],
+        "responses": {
+          "200": {
+            "description": "A list of cars",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Car"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cars/make/{make}": {
+      "get": {
+        "summary": "Get cars by make",
+        "description": "Retrieve all cars from a specific manufacturer",
+        "tags": ["Cars"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "make",
+            "required": true,
+            "description": "Car manufacturer (e.g., Toyota, Honda, Ford)",
+            "schema": {
+              "type": "string",
+              "example": "Toyota"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cars from the specified make",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Car"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cars/year/{year}": {
+      "get": {
+        "summary": "Get cars by year",
+        "description": "Retrieve all cars from a specific year",
+        "tags": ["Cars"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "year",
+            "required": true,
+            "description": "Manufacturing year (e.g., 1993, 2020)",
+            "schema": {
+              "type": "integer",
+              "example": 1993
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cars from the specified year",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Car"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cars/class/{class}": {
+      "get": {
+        "summary": "Get cars by class",
+        "description": "Retrieve all cars from a specific class/category. Spaces are automatically removed from the input, so 'midsize car' and 'midsizecar' will both work.",
+        "tags": ["Cars"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "class",
+            "required": true,
+            "description": "Car class (spaces are automatically removed). Examples: 'midsizecar', 'midsize car', 'compactcar', 'suv'",
+            "schema": {
+              "type": "string",
+              "example": "midsizecar"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cars from the specified class",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Car"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cars/fuel-type/{fuelType}": {
+      "get": {
+        "summary": "Get cars by fuel type",
+        "description": "Retrieve all cars that use a specific fuel type",
+        "tags": ["Cars"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fuelType",
+            "required": true,
+            "description": "Fuel type (e.g., 'gas', 'diesel', 'electric')",
+            "schema": {
+              "type": "string",
+              "example": "gas"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cars that use the specified fuel type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Car"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cars/drive/{drive}": {
+      "get": {
+        "summary": "Get cars by drive type",
+        "description": "Retrieve all cars with a specific drive type",
+        "tags": ["Cars"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "drive",
+            "required": true,
+            "description": "Drive type (e.g., 'fwd', 'rwd', 'awd', '4wd')",
+            "schema": {
+              "type": "string",
+              "example": "fwd"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of cars with the specified drive type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Car"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Car": {
+        "type": "object",
+        "required": ["id", "make", "model", "year"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The auto-generated id of the car",
+            "example": 1
+          },
+          "make": {
+            "type": "string",
+            "description": "The car manufacturer",
+            "example": "toyota"
+          },
+          "model": {
+            "type": "string",
+            "description": "The car model",
+            "example": "camry"
+          },
+          "year": {
+            "type": "integer",
+            "description": "The year the car was manufactured",
+            "example": 1993
+          },
+          "class": {
+            "type": "string",
+            "description": "The car class/category",
+            "example": "midsize car"
+          },
+          "city_mpg": {
+            "type": "integer",
+            "description": "Miles per gallon in city driving",
+            "example": 18
+          },
+          "highway_mpg": {
+            "type": "integer",
+            "description": "Miles per gallon on highway",
+            "example": 26
+          },
+          "combination_mpg": {
+            "type": "integer",
+            "description": "Combined city and highway MPG",
+            "example": 21
+          },
+          "fuel_type": {
+            "type": "string",
+            "description": "Type of fuel used",
+            "example": "gas"
+          },
+          "drive": {
+            "type": "string",
+            "description": "Drive type (fwd, rwd, awd, etc.)",
+            "example": "fwd"
+          },
+          "transmission": {
+            "type": "string",
+            "description": "Transmission type (a = automatic, m = manual)",
+            "example": "a"
+          },
+          "cylinders": {
+            "type": "integer",
+            "description": "Number of engine cylinders",
+            "example": 4
+          },
+          "displacement": {
+            "type": "number",
+            "format": "float",
+            "description": "Engine displacement in liters",
+            "example": 2.2
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Internal server error"
+          }
+        }
+      },
+      "HealthCheck": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Health status",
+            "example": true
+          },
+          "time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Current server time",
+            "example": "2023-10-02T10:30:00.000Z"
+          }
+        }
+      }
+    }
+  }
+}
