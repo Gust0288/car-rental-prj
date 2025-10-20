@@ -45,7 +45,7 @@ export default function Home() {
       <Box
         bg="gradient-to-r"
         bgGradient="linear(to-r, blue.600, blue.400)"
-        color="white"
+        color="black"
         py={20}
         textAlign="center"
       >
