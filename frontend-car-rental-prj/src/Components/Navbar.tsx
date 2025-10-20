@@ -1,16 +1,9 @@
-import { 
-  Box, 
-  HStack, 
-  VStack, 
-  Text, 
-  Button,
-  Input
-} from "@chakra-ui/react";
+import { Box, HStack, VStack, Text, Button, Input } from "@chakra-ui/react";
 import { useState } from "react";
 
 export const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
@@ -25,8 +18,8 @@ export const NavBar = () => {
       p={4}
     >
       {/* Desktop Navigation */}
-      <HStack 
-        justifyContent="space-between" 
+      <HStack
+        justifyContent="space-between"
         width="100%"
         maxW="1200px"
         mx="auto"
@@ -35,41 +28,62 @@ export const NavBar = () => {
         <Text fontSize="xl" fontWeight="bold" color="white">
           Car Rental
         </Text>
-        
-        <Input 
-          placeholder="Search for cars..." 
+
+        <Input
+          placeholder="Search for cars..."
           width="100%"
           maxW="400px"
           mx={4}
           bg="white"
         />
-        
+
         <HStack spacing={2}>
-          <Button variant="ghost" size="sm" color="white" _hover={{ bg: "blue.600" }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+          >
             Home
           </Button>
-          <Button variant="ghost" size="sm" color="white" _hover={{ bg: "blue.600" }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+          >
             Cars
           </Button>
-          <Button variant="ghost" size="sm" color="white" _hover={{ bg: "blue.600" }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+          >
             Login
           </Button>
-          <Button variant="solid" size="sm" bg="white" color="blue.500" _hover={{ bg: "gray.100" }}>
+          <Button
+            variant="solid"
+            size="sm"
+            bg="white"
+            color="blue.500"
+            _hover={{ bg: "gray.100" }}
+          >
             Sign Up
           </Button>
         </HStack>
       </HStack>
 
       {/* Mobile Navigation */}
-      <HStack 
-        justifyContent="space-between" 
+      <HStack
+        justifyContent="space-between"
         width="100%"
         display={{ base: "flex", md: "none" }}
       >
         <Text fontSize="lg" fontWeight="bold" color="white">
           Car Rental
         </Text>
-        
+
         <Button
           onClick={handleToggle}
           bg="white"
@@ -77,7 +91,7 @@ export const NavBar = () => {
           size="sm"
           _hover={{ bg: "gray.100" }}
         >
-          {isOpen ? '✕' : '☰'}
+          {isOpen ? "✕" : "☰"}
         </Button>
       </HStack>
 
@@ -85,26 +99,22 @@ export const NavBar = () => {
       <Box display={{ base: "block", md: "none" }} width="100%">
         {/* Mobile Search Bar */}
         <Box px={4} py={3} borderTop="1px" borderColor="blue.400">
-          <Input 
-            placeholder="Search for cars..." 
-            width="100%"
-            bg="white"
-          />
+          <Input placeholder="Search for cars..." width="100%" bg="white" />
         </Box>
 
         {/* Mobile Menu */}
         {isOpen && (
-          <VStack 
-            bg="white" 
-            p={4} 
+          <VStack
+            bg="white"
+            p={4}
             spacing={3}
             width="100%"
             borderTop="1px"
             borderColor="gray.200"
           >
-            <Button 
-              variant="outline" 
-              colorScheme="blue" 
+            <Button
+              variant="outline"
+              colorScheme="blue"
               onClick={handleToggle}
               width="100%"
               justifyContent="center"
@@ -117,9 +127,9 @@ export const NavBar = () => {
             >
               Home
             </Button>
-            <Button 
-              variant="outline" 
-              colorScheme="blue" 
+            <Button
+              variant="outline"
+              colorScheme="blue"
               onClick={handleToggle}
               width="100%"
               justifyContent="center"
@@ -132,9 +142,9 @@ export const NavBar = () => {
             >
               Cars
             </Button>
-            <Button 
-              variant="outline" 
-              colorScheme="blue" 
+            <Button
+              variant="outline"
+              colorScheme="blue"
               onClick={handleToggle}
               width="100%"
               justifyContent="center"
@@ -147,9 +157,9 @@ export const NavBar = () => {
             >
               Login
             </Button>
-            <Button 
-              variant="solid" 
-              colorScheme="blue" 
+            <Button
+              variant="solid"
+              colorScheme="blue"
               onClick={handleToggle}
               width="100%"
               size="md"
@@ -165,3 +175,21 @@ export const NavBar = () => {
     </Box>
   );
 };
+
+// import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+// import Home from "./pages/home";
+// import LoginPage from "./pages/LoginPage";
+// import SignupPage from "./pages/SignupPage";
+// import ProfilePage from "./pages/ProfilePage";
+
+// export default function App() {
+//   return (
+//     <Router>
+//       <Routes>
+//         <Route path="/" element={<Home />} />
+//         <Route path="/login" element={<LoginPage />} />
+//         <Route path="/signup" element={<SignupPage />} />
+//         <Route path="/profile" element={<ProfilePage />} />
+//         <Route path="*" element={<Navigate to="/" replace />} />
+//       </Routes>
+//     </Router>

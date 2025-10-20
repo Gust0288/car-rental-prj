@@ -12,7 +12,7 @@ yarn-error.log*
 
 # Environment files with sensitive data
 .env.local
-.env.productio
+.env.production
 *.env
 
 # Editor directories and files

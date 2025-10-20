@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Backend API (containerized)
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://postgres:password@host.docker.internal:5432/car_rental_db
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/package.json:/app/package.json
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Vite Dev Server (containerized with hot reload)
+  frontend-dev:
+    build: 
+      context: ./frontend-car-rental-prj
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_API_URL: http://localhost:3001
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: 1000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend-car-rental-prj/src:/app/src
+      - ./frontend-car-rental-prj/package.json:/app/package.json
+      - ./frontend-car-rental-prj/vite.config.ts:/app/vite.config.ts
+      - /app/node_modules
+    depends_on:
+      - backend

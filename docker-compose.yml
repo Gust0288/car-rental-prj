@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - COMMENTED OUT (using local PostgreSQL)
+  # database:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: appdb
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # Backend API
+  backend:
+    build: ./backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://postgres:password@host.docker.internal:5432/car_rental_db
+      PORT: 3001
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend React App
+  frontend:
+    build: ./frontend-car-rental-prj
+    environment:
+      VITE_API_URL: /api
+    ports:
+      - "3009:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
