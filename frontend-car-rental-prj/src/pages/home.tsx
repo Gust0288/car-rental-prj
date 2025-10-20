@@ -1,85 +1,182 @@
-import { useEffect, useState } from "react";
-import { Box, Heading, Spinner, VStack, Text, Button, HStack } from "@chakra-ui/react";
+import { useState } from "react";
+import {
+  Box,
+  Heading,
+  Text,
+  Container,
+  VStack,
+  HStack,
+  Button,
+  Input,
+  Grid,
+  GridItem,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
-import { getCars } from "../services/cars";
-import type { Car } from "../services/cars";
 
 export default function Home() {
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user, logout } = useUser();
   const navigate = useNavigate();
+  const [searchCriteria, setSearchCriteria] = useState({
+    location: "",
+    pickupDate: "",
+    returnDate: "",
+    carType: "",
+  });
 
-  useEffect(() => {
-    // Fetch cars
-    getCars()
-      .then(setCars)
-      .catch((err) => {
-        console.error("Failed to fetch cars:", err);
-        setError(
-          "Failed to load cars. Please make sure the backend server is running."
-        );
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setSearchCriteria((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSearch = () => {
+    // For now, just navigate to cars page
+    // Later you can pass search criteria as URL params or state
+    console.log("Search criteria:", searchCriteria);
+    navigate("/cars");
+  };
 
   return (
-    <Box p={6}>
-      <HStack justify="space-between" mb={6}>
-        <Heading size="md">
-          Car Rental System 
-        </Heading>
-        <HStack gap={2}>
-          {user ? (
-            <>
-              <Text>Welcome, {user.name}!</Text>
-              <Button onClick={() => navigate("/profile")} size="sm">
-                Profile
-              </Button>
-              <Button onClick={logout} variant="outline" size="sm">
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button onClick={() => navigate("/login")} size="sm">
-                Login
-              </Button>
-              <Button onClick={() => navigate("/signup")} colorScheme="blue" size="sm">
-                Sign Up
-              </Button>
-            </>
-          )}
-        </HStack>
-      </HStack>
-
-      {loading ? (
-        <Spinner />
-      ) : error ? (
-        <Box
-          p={4}
-          bg="red.100"
-          borderRadius="md"
-          borderLeft="4px solid"
-          borderColor="red.500"
-        >
-          <Text color="red.700" fontWeight="bold">
-            Error
-          </Text>
-          <Text color="red.600">{error}</Text>
-        </Box>
-      ) : (
-        <VStack gap={2} align="start">
-          <Heading size="sm" mb={2}>Available Cars</Heading>
-          {cars.map((c) => (
-            <Text key={c.id}>
-              {c.id}. {c.make} — {c.model}
+    <Box>
+      {/* Hero Section */}
+      <Box
+        bg="gradient-to-r"
+        bgGradient="linear(to-r, blue.600, blue.400)"
+        color="white"
+        py={20}
+        textAlign="center"
+      >
+        <Container maxW="6xl">
+          <VStack gap={6}>
+            <Heading size="2xl" fontWeight="bold">
+              Find Your Perfect Rental Car
+            </Heading>
+            <Text fontSize="xl" maxW="2xl">
+              Choose from hundreds of vehicles at unbeatable prices. 
+              Your journey starts here.
             </Text>
-          ))}
-        </VStack>
-      )}
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* Search Section */}
+      <Box py={10} bg="gray.50">
+        <Container maxW="4xl">
+          <VStack gap={8}>
+            <Heading size="lg" textAlign="center" color="gray.700">
+              Search for Cars
+            </Heading>
+            
+            <Box w="100%" bg="white" p={8} borderRadius="lg" shadow="md">
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold">
+                    Pickup Location
+                  </Text>
+                  <Input
+                    name="location"
+                    placeholder="Enter city or airport"
+                    value={searchCriteria.location}
+                    onChange={handleInputChange}
+                    size="lg"
+                  />
+                </GridItem>
+                
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold">
+                    Car Type
+                  </Text>
+                  <Input
+                    name="carType"
+                    placeholder="Select car type (e.g., Economy, SUV, Luxury)"
+                    value={searchCriteria.carType}
+                    onChange={handleInputChange}
+                    size="lg"
+                  />
+                </GridItem>
+                
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold">
+                    Pickup Date
+                  </Text>
+                  <Input
+                    name="pickupDate"
+                    type="date"
+                    value={searchCriteria.pickupDate}
+                    onChange={handleInputChange}
+                    size="lg"
+                  />
+                </GridItem>
+                
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold">
+                    Return Date
+                  </Text>
+                  <Input
+                    name="returnDate"
+                    type="date"
+                    value={searchCriteria.returnDate}
+                    onChange={handleInputChange}
+                    size="lg"
+                  />
+                </GridItem>
+              </Grid>
+              
+              <Box mt={6} textAlign="center">
+                <Button
+                  onClick={handleSearch}
+                  colorScheme="blue"
+                  size="lg"
+                  px={8}
+                  py={3}
+                >
+                  Search Cars
+                </Button>
+              </Box>
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* Quick Links Section */}
+      <Box py={16}>
+        <Container maxW="6xl">
+          <VStack gap={8}>
+            <Heading size="lg" textAlign="center" color="gray.700">
+              Quick Actions
+            </Heading>
+            
+            <HStack gap={4} flexWrap="wrap" justify="center">
+              <Button
+                onClick={() => navigate("/cars")}
+                variant="outline"
+                colorScheme="blue"
+                size="lg"
+              >
+                Browse All Cars
+              </Button>
+              <Button
+                onClick={() => navigate("/login")}
+                variant="outline"
+                colorScheme="gray"
+                size="lg"
+              >
+                Sign In
+              </Button>
+              <Button
+                onClick={() => navigate("/signup")}
+                colorScheme="blue"
+                size="lg"
+              >
+                Create Account
+              </Button>
+            </HStack>
+          </VStack>
+        </Container>
+      </Box>
     </Box>
   );
 }

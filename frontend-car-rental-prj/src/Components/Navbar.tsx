@@ -1,8 +1,10 @@
 import { Box, HStack, VStack, Text, Button, Input } from "@chakra-ui/react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
@@ -43,6 +45,7 @@ export const NavBar = () => {
             size="sm"
             color="white"
             _hover={{ bg: "blue.600" }}
+            onClick={() => navigate("/")}
           >
             Home
           </Button>
@@ -51,6 +54,7 @@ export const NavBar = () => {
             size="sm"
             color="white"
             _hover={{ bg: "blue.600" }}
+            onClick={() => navigate("/cars")}
           >
             Cars
           </Button>
@@ -59,6 +63,7 @@ export const NavBar = () => {
             size="sm"
             color="white"
             _hover={{ bg: "blue.600" }}
+            onClick={() => navigate("/login")}
           >
             Login
           </Button>
@@ -68,6 +73,7 @@ export const NavBar = () => {
             bg="white"
             color="blue.500"
             _hover={{ bg: "gray.100" }}
+            onClick={() => navigate("/signup")}
           >
             Sign Up
           </Button>
@@ -107,7 +113,7 @@ export const NavBar = () => {
           <VStack
             bg="white"
             p={4}
-            spacing={3}
+            gap={3}
             width="100%"
             borderTop="1px"
             borderColor="gray.200"
@@ -115,7 +121,10 @@ export const NavBar = () => {
             <Button
               variant="outline"
               colorScheme="blue"
-              onClick={handleToggle}
+              onClick={() => {
+                navigate("/");
+                handleToggle();
+              }}
               width="100%"
               justifyContent="center"
               borderWidth="1px"
@@ -130,7 +139,10 @@ export const NavBar = () => {
             <Button
               variant="outline"
               colorScheme="blue"
-              onClick={handleToggle}
+              onClick={() => {
+                navigate("/cars");
+                handleToggle();
+              }}
               width="100%"
               justifyContent="center"
               borderWidth="1px"
@@ -145,7 +157,10 @@ export const NavBar = () => {
             <Button
               variant="outline"
               colorScheme="blue"
-              onClick={handleToggle}
+              onClick={() => {
+                navigate("/login");
+                handleToggle();
+              }}
               width="100%"
               justifyContent="center"
               borderWidth="1px"
@@ -160,7 +175,10 @@ export const NavBar = () => {
             <Button
               variant="solid"
               colorScheme="blue"
-              onClick={handleToggle}
+              onClick={() => {
+                navigate("/signup");
+                handleToggle();
+              }}
               width="100%"
               size="md"
               fontSize="md"
