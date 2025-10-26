@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
+import axios from 'axios'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -40,6 +41,9 @@ const SignupPage = () => {
       const response = await api.post('/users/signup', formData)
       
       if (response.data.message === 'User created successfully') {
+      const response = await axios.post('http://localhost:3000/api/auth/signup', formData)
+      
+      if (response.data.success) {
         setMessage({
           type: 'success',
           text: 'Account created successfully!'

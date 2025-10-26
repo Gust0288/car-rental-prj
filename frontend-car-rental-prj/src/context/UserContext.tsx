@@ -23,6 +23,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = (userData: User) => {
     setUser(userData)
    
+    // Store in localStorage for persistence
     localStorage.setItem('user', JSON.stringify(userData))
   }
 
