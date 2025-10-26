@@ -1,54 +1,30 @@
-import { useEffect, useState } from "react";
-import { Box, Heading, Spinner, VStack, Text } from "@chakra-ui/react";
-import { getCars } from "./services/cars";
-import type { Car } from "./services/cars";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Box } from "@chakra-ui/react";
+import { NavBar } from "./Components/Navbar";
+import { Footer } from "./Components/Footer";
+import Home from "./pages/home";
+import CarsPage from "./pages/CarsPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import ProfilePage from "./pages/ProfilePage";
 
 export default function App() {
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getCars()
-      .then(setCars)
-      .catch((err) => {
-        console.error("Failed to fetch cars:", err);
-        setError(
-          "Failed to load cars. Please make sure the backend server is running."
-        );
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
   return (
-    <Box p={6}>
-      <Heading size="md" mb={4}>
-        🚗 🚗 Car Rental System ⚡
-      </Heading>
-      {loading ? (
-        <Spinner />
-      ) : error ? (
-        <Box
-          p={4}
-          bg="red.100"
-          borderRadius="md"
-          borderLeft="4px solid"
-          borderColor="red.500"
-        >
-          <Text color="red.700" fontWeight="bold">
-            Error
-          </Text>
-          <Text color="red.600">{error}</Text>
+    <Router>
+      <Box minH="100vh" display="flex" flexDirection="column">
+        <NavBar />
+        <Box flex="1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/cars" element={<CarsPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </Box>
-      ) : (
-        <VStack gap={2} align="start">
-          {cars.map((c) => (
-            <Text key={c.id}>
-              {c.id}. {c.brand} — {c.model}
-            </Text>
-          ))}
-        </VStack>
-      )}
-    </Box>
+        <Footer />
+      </Box>
+    </Router>
   );
 }

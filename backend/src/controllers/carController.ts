@@ -6,7 +6,7 @@ export const getAllCars = async (_req: Request, res: Response) => {
     const { rows } = await pool.query(
       `SELECT id, make, model, year, class, city_mpg, highway_mpg, 
               combination_mpg, fuel_type, drive, transmission, 
-              cylinders, displacement 
+              cylinders, displacement, img_path 
        FROM public.cars 
        ORDER BY id ASC`
     );

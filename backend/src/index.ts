@@ -9,13 +9,22 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:3001",
+      "http://localhost",
+    ],
+  })
+);
 
 // Setup Swagger documentation
 setupSwagger(app);
 
-// Routes
-app.use("/", routes);
+// Routes from modular structure
+app.use("/api", routes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

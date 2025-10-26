@@ -1,3 +1,4 @@
+-- Cars table for car_rental_db database
 CREATE TABLE cars (
     id SERIAL PRIMARY KEY,
     city_mpg INT,
