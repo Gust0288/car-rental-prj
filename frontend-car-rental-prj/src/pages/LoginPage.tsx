@@ -2,7 +2,6 @@ import { Box, Button, Heading, Input, VStack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import axios from "axios";
 import { useUser } from "../context/UserContext";
 
 const LoginPage = () => {
@@ -38,12 +37,6 @@ const LoginPage = () => {
       );
 
       if (response.data.message === "Login successful") {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        formData
-      );
-
-      if (response.data.success) {
         // Store user data in context
         login(response.data.user);
 
