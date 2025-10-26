@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Heading, Spinner, Text, Container, VStack } from "@chakra-ui/react";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
+import { CarGrid } from "../Components/CarGrid";
 import { CarGrid } from "../components/CarGrid";
 
 export default function CarsPage() {

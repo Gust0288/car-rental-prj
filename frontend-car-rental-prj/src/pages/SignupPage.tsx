@@ -8,12 +8,14 @@ import {
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { api } from '../services/api'
 import axios from 'axios'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     username: '',
     name: '',
+    user_last_name: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -36,6 +38,9 @@ const SignupPage = () => {
     setMessage(null)
 
     try {
+      const response = await api.post('/users/signup', formData)
+      
+      if (response.data.message === 'User created successfully') {
       const response = await axios.post('http://localhost:3000/api/auth/signup', formData)
       
       if (response.data.success) {
@@ -116,6 +121,19 @@ const SignupPage = () => {
                     type="text"
                     placeholder="Name"
                     value={formData.name}
+                    onChange={handleInputChange}
+                    size="lg"
+                    required
+                  />
+                </Box>
+
+                <Box>
+                  <Text mb={2} fontWeight="semibold">Last Name</Text>
+                  <Input
+                    name="user_last_name"
+                    type="text"
+                    placeholder="Last Name"
+                    value={formData.user_last_name}
                     onChange={handleInputChange}
                     size="lg"
                     required

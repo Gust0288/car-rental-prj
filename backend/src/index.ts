@@ -26,6 +26,7 @@ app.use(
 setupSwagger(app);
 
 // Routes from modular structure
+app.use("/api", routes);
 app.use("/", routes);
 
 // Authentication endpoints
