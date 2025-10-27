@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
-import { NavBar } from "./Components/Navbar";
-import { Footer } from "./Components/Footer";
+import { NavBar } from "./components/Navbar";
+import { Footer } from "./components/Footer";
 import Home from "./pages/home";
 import CarsPage from "./pages/CarsPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
+import SingleCarView from "./pages/SingleCarView";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/car/:id" element={<SingleCarView />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Box>

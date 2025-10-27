@@ -1,11 +1,11 @@
 import { Box, Image, Text, VStack } from "@chakra-ui/react";
+import { useNavigate } from 'react-router-dom';
 
 interface CarCardProps {
   id: number;
   make: string;
   model: string;
   imageUrl?: string;
-  onClick?: () => void;
 }
 
 const capitalizeString = (str: string) => {
@@ -18,21 +18,23 @@ export const CarCard = ({
   make, 
   model, 
   imageUrl = "https://via.placeholder.com/300x200?text=No+Image", 
-  onClick 
+  id,
 }: CarCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <Box
+      onClick={() => navigate(`/car/${id}`)}
       bg="white"
       borderRadius="lg"
       overflow="hidden"
       shadow="md"
-      transition="all 0.2s"
-      cursor={onClick ? "pointer" : "default"}
-      _hover={onClick ? { 
-        shadow: "lg", 
-        transform: "translateY(-2px)" 
-      } : {}}
-      onClick={onClick}
+      transition="all 0.3s ease"
+      cursor="pointer"
+      _hover={{ 
+        shadow: "xl", 
+        transform: "translateY(-4px) scale(1.02)" 
+      }}
       position="relative"
     >
       {/* Car Image */}
@@ -43,7 +45,9 @@ export const CarCard = ({
           width="100%"
           height="100%"
           objectFit="cover"
-          fallbackSrc="https://via.placeholder.com/300x200?text=No+Image"
+          onError={(e) => {
+            e.currentTarget.src = "https://via.placeholder.com/300x200?text=No+Image";
+          }}
         />
         
         {/* Car Name Overlay */}
@@ -55,7 +59,7 @@ export const CarCard = ({
           bg="linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)"
           p={4}
         >
-          <VStack align="start" spacing={0}>
+          <VStack align="start" gap={0}>
             <Text 
               color="white" 
               fontSize="lg" 

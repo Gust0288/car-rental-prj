@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Heading, Spinner, Text, Container, VStack } from "@chakra-ui/react";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
-import { CarGrid } from "../Components/CarGrid";
+import { CarGrid } from "../components/CarGrid";
 
 export default function CarsPage() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -21,10 +21,6 @@ export default function CarsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleCarClick = (car: Car) => {
-    console.log("Car clicked:", car);
-    // You can add navigation to car details page here later
-  };
 
   // Remove duplicates based on make and model combination
   const removeDuplicateCars = (cars: Car[]) => {
@@ -123,7 +119,7 @@ export default function CarsPage() {
                   </Text>
                 </Box>
                 
-                <CarGrid cars={carsForMake} onCarClick={handleCarClick} />
+                <CarGrid cars={carsForMake}/>
               </Box>
             ))}
           </VStack>
