@@ -8,9 +8,15 @@ interface User {
   email: string
 }
 
+interface LoginResponse {
+  user: User
+  token: string
+}
+
 interface UserContextType {
   user: User | null
-  login: (userData: User) => void
+  token: string | null
+  login: (loginData: LoginResponse) => void
   logout: () => void
   isLoggedIn: boolean
 }
@@ -19,34 +25,43 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
 
-  const login = (userData: User) => {
-    setUser(userData)
+  const login = (loginData: LoginResponse) => {
+    setUser(loginData.user)
+    setToken(loginData.token)
    
-    // Store in localStorage for persistence
-    localStorage.setItem('user', JSON.stringify(userData))
+    localStorage.setItem('user', JSON.stringify(loginData.user)) 
+    localStorage.setItem('token', loginData.token)
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('user')
+    setToken(null)
+    localStorage.removeItem('user')     
+    localStorage.removeItem('token')
   }
 
   // Check localStorage on initial load
   React.useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
+    const storedUser = localStorage.getItem('user')    
+    const storedToken = localStorage.getItem('token')
+    
+    if ( storedUser &&  storedToken) {  
       try {
-        setUser(JSON.parse(storedUser))
+        setUser(JSON.parse(storedUser))  
+        setToken(storedToken)
       } catch {
-        // If parsing fails, remove invalid data
-        localStorage.removeItem('user')
+       
+        localStorage.removeItem('user')  
+        localStorage.removeItem('token')
       }
     }
   }, [])
 
   const value = {
     user,
+    token,
     login,
     logout,
     isLoggedIn: !!user

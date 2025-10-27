@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { userPool } from "../config/database.js";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 
 // User signup
 export const signupUser = async (req: Request, res: Response) => {
@@ -125,10 +126,18 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 // Get user profile
-export const getUserProfile = async (req: Request, res: Response) => {
+export const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   const { userId } = req.params;
 
   try {
+    // Check if the authenticated user is requesting their own profile
+    if (req.userId !== parseInt(userId)) {
+      return res.status(403).json({ 
+        error: "Forbidden", 
+        message: "You can only access your own profile" 
+      });
+    }
+
     const { rows } = await userPool.query(
       `SELECT id, username, name, user_last_name, email, user_created_at, user_updated_at 
        FROM public.users 
@@ -149,11 +158,19 @@ export const getUserProfile = async (req: Request, res: Response) => {
 };
 
 
-export const updateUserProfile = async (req: Request, res: Response) => {
+export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
   const { userId } = req.params;
   const { username, name, user_last_name, email } = req.body;
 
   try {
+    // Check if the authenticated user is updating their own profile
+    if (req.userId !== parseInt(userId)) {
+      return res.status(403).json({ 
+        error: "Forbidden", 
+        message: "You can only update your own profile" 
+      });
+    }
+
     const { rows } = await userPool.query(
       `UPDATE public.users 
        SET username = $2, name = $3, user_last_name = $4, email = $5, user_updated_at = NOW() 
@@ -178,10 +195,18 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 };
 
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: AuthenticatedRequest, res: Response) => {
   const { userId } = req.params;
 
   try {
+    // Check if the authenticated user is deleting their own account
+    if (req.userId !== parseInt(userId)) {
+      return res.status(403).json({ 
+        error: "Forbidden", 
+        message: "You can only delete your own account" 
+      });
+    }
+
     const { rows } = await userPool.query(
       `UPDATE public.users 
        SET user_deleted_at = NOW() 

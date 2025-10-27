@@ -8,7 +8,8 @@ import {
 } from '@chakra-ui/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+import { httpClient } from '../services/httpClient'
+import { useUser } from '../context/UserContext'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const SignupPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const navigate = useNavigate()
+  const { login } = useUser()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -37,18 +39,22 @@ const SignupPage = () => {
     setMessage(null)
 
     try {
-      const response = await api.post('/users/signup', formData)
+      const response = await httpClient.post('/users/signup', formData)
       
       if (response.data.message === 'User created successfully') {
-        setMessage({
-          type: 'success',
-          text: 'Account created successfully!'
+        login({
+          user: response.data.user,
+          token: response.data.token
         })
         
-        // Redirect to login or home page after a delay
+        setMessage({
+          type: 'success',
+          text: `Welcome ${response.data.user.name}! Account created successfully!`
+        })
+        
         setTimeout(() => {
-          navigate('/login')
-        }, 2000)
+          navigate('/profile')
+        }, 1000)
       }
     } catch (error: unknown) {
       let errorMessage = 'Something went wrong'
@@ -70,13 +76,14 @@ const SignupPage = () => {
   return (
     <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
       {/* Main Content */}
-      <Box maxW="md" mx="auto" py={16} px={4} flex="1" display="flex" alignItems="center">
+    
+      <Box maxW="7xl" mx="auto" py={10} px={4} flex="1" display="flex" alignItems="center">
         <VStack gap={8} align="center" w="100%">
           <Heading size="4xl" textAlign="center" color="gray.700">
             Sign up
           </Heading>
 
-          <Box w="full" bg="white" p={8} borderRadius="md" boxShadow="sm">
+          <Box w={{ base: "95%", md: "500px" }} bg="white" p={12} borderRadius="md" boxShadow="sm">
             {message && (
               <Box
                 p={4}
@@ -96,8 +103,8 @@ const SignupPage = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <VStack gap={4} align="stretch">
-                <Box>
+              <VStack gap={6} align="stretch" w="100%">
+                <Box w="100%">
                   <Text mb={2} fontWeight="semibold">Username</Text>
                   <Input
                     name="username"
@@ -106,6 +113,7 @@ const SignupPage = () => {
                     value={formData.username}
                     onChange={handleInputChange}
                     size="lg"
+                    w="100%"
                     required
                   />
                 </Box>

@@ -6,16 +6,17 @@ import {
   updateUserProfile, 
   deleteUser 
 } from "../controllers/userController.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = Router();
 
-
+// Public routes
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
 
-
-router.get("/profile/:userId", getUserProfile);
-router.put("/profile/:userId", updateUserProfile);
-router.delete("/profile/:userId", deleteUser);
+// Protected routes 
+router.get("/profile/:userId", authenticateToken, getUserProfile);
+router.put("/profile/:userId", authenticateToken, updateUserProfile);
+router.delete("/profile/:userId", authenticateToken, deleteUser);
 
 export default router;
