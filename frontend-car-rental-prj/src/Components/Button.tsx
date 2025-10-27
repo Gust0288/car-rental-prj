@@ -1,5 +1,5 @@
 import { Button as ChakraButton } from "@chakra-ui/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface CustomButtonProps {
   children: ReactNode;
@@ -9,6 +9,7 @@ interface CustomButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  isLoading?: boolean;
 }
 
 export const Button = ({ 
@@ -18,7 +19,8 @@ export const Button = ({
   size = "md",
   onClick,
   disabled,
-  type = "button"
+  type = "button",
+  isLoading = false
 }: CustomButtonProps) => {
   
   const getVariantProps = () => {
@@ -40,7 +42,6 @@ export const Button = ({
         };
       case "outline":
         return {
-          variant: "outline",
           borderColor: "blue.500",
           color: "blue.500",
           _hover: { bg: "blue.50", borderColor: "blue.600" },
@@ -48,7 +49,6 @@ export const Button = ({
         };
       case "ghost":
         return {
-          variant: "ghost",
           color: "gray.600",
           _hover: { bg: "gray.100" },
           _active: { bg: "gray.200" }
@@ -65,6 +65,8 @@ export const Button = ({
     }
   };
 
+  const chakraVariant = variant === "outline" ? "outline" : variant === "ghost" ? "ghost" : "solid";
+
   return (
     <ChakraButton
       size={size}
@@ -74,8 +76,10 @@ export const Button = ({
       transition="all 0.2s"
       _focus={{ boxShadow: "outline" }}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       type={type}
+      loading={isLoading}
+      variant={chakraVariant}
       {...getVariantProps()}
     >
       {children}
