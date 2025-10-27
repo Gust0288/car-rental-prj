@@ -20,7 +20,7 @@ const ProfilePage = () => {
     <Container maxW="md" py={8}>
       <VStack gap={6}>
         <Box 
-          p={8} 
+          p={12} 
           w="100%" 
           textAlign="center" 
           borderWidth={1} 
