@@ -375,6 +375,11 @@
             "format": "float",
             "description": "Engine displacement in liters",
             "example": 2.2
+          },
+          "img_path": {
+            "type": "string",
+            "description": "Path or URL to an image representing the car",
+            "example": "/images/cars/placeholder.jpg"
           }
         }
       },
