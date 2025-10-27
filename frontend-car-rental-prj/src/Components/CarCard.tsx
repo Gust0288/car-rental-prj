@@ -8,6 +8,12 @@ interface CarCardProps {
   onClick?: () => void;
 }
 
+const capitalizeString = (str: string) => {
+    return str.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  };
+
 export const CarCard = ({ 
   make, 
   model, 
@@ -56,14 +62,14 @@ export const CarCard = ({
               fontWeight="bold"
               textShadow="1px 1px 2px rgba(0,0,0,0.8)"
             >
-              {make}
+              {capitalizeString(make)}
             </Text>
             <Text 
               color="white" 
               fontSize="md"
               textShadow="1px 1px 2px rgba(0,0,0,0.8)"
             >
-              {model}
+              {capitalizeString(model)}
             </Text>
           </VStack>
         </Box>
