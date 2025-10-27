@@ -23,7 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.*
+*.env
 
-# Environment files with sensitive data
+# 🔒 Environment files with sensitive data - NEVER COMMIT
 .env.local
+.env.development
+.env.staging
 .env.production
+.env.test
