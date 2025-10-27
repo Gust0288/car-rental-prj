@@ -6,37 +6,48 @@ import {
   Container,
   VStack,
   HStack,
-  Button,
   Input,
   Grid,
   GridItem,
+  Stack,
 } from "@chakra-ui/react";
+import { Field as ChakraField } from "@chakra-ui/react/field";
+import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../components/Button";
 
 export default function Home() {
   const navigate = useNavigate();
-  const [searchCriteria, setSearchCriteria] = useState({
-    location: "",
-    pickupDate: "",
-    returnDate: "",
-    carType: "",
-  });
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [returnLocation, setReturnLocation] = useState("");
+  const [pickupAt, setPickupAt] = useState(
+    new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
+  const [returnAt, setReturnAt] = useState(
+    new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setSearchCriteria((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const errors = {
+    pickupLocation: pickupLocation ? "" : "Choose pick up location",
+    returnLocation: returnLocation ? "" : "Choose return location",
+    pickupAt: new Date(pickupAt).getTime() > Date.now() - 60 * 1000 ? "" : "Pick up must be in the future",
+    returnAt: new Date(returnAt) > new Date(pickupAt) ? "" : "Return must be after pick up",
   };
 
   const handleSearch = () => {
-    // For now, just navigate to cars page
-    // Later you can pass search criteria as URL params or state
-    console.log("Search criteria:", searchCriteria);
-    navigate("/cars");
+    const hasErrors = Object.values(errors).some(Boolean);
+    if (hasErrors) {
+      return;
+    }
+    
+    // Navigate to cars page with search params
+    const params = new URLSearchParams({
+      pickupLocation,
+      returnLocation,
+      pickupDate: pickupAt.split('T')[0],
+      returnDate: returnAt.split('T')[0],
+    });
+    navigate(`/cars?${params.toString()}`);
   };
 
   return (
@@ -71,67 +82,72 @@ export default function Home() {
             </Heading>
             
             <Box w="100%" bg="white" p={8} borderRadius="lg" shadow="md">
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
-                <GridItem>
-                  <Text mb={2} fontWeight="semibold">
-                    Pickup Location
-                  </Text>
-                  <Input
-                    name="location"
-                    placeholder="Enter city or airport"
-                    value={searchCriteria.location}
-                    onChange={handleInputChange}
-                    size="lg"
-                  />
-                </GridItem>
-                
-                <GridItem>
-                  <Text mb={2} fontWeight="semibold">
-                    Car Type
-                  </Text>
-                  <Input
-                    name="carType"
-                    placeholder="Select car type (e.g., Economy, SUV, Luxury)"
-                    value={searchCriteria.carType}
-                    onChange={handleInputChange}
-                    size="lg"
-                  />
-                </GridItem>
-                
-                <GridItem>
-                  <Text mb={2} fontWeight="semibold">
-                    Pickup Date
-                  </Text>
-                  <Input
-                    name="pickupDate"
-                    type="date"
-                    value={searchCriteria.pickupDate}
-                    onChange={handleInputChange}
-                    size="lg"
-                  />
-                </GridItem>
-                
-                <GridItem>
-                  <Text mb={2} fontWeight="semibold">
-                    Return Date
-                  </Text>
-                  <Input
-                    name="returnDate"
-                    type="date"
-                    value={searchCriteria.returnDate}
-                    onChange={handleInputChange}
-                    size="lg"
-                  />
-                </GridItem>
-              </Grid>
+              <Stack gap={4}>
+                <ChakraField.Root invalid={!!errors.pickupLocation}>
+                  <ChakraField.Label>Pick up location</ChakraField.Label>
+                  <NativeSelectRoot>
+                    <NativeSelectField
+                      placeholder="Select location"
+                      value={pickupLocation}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
+                    >
+                      <option value="cph">Copenhagen</option>
+                      <option value="aar">Aarhus</option>
+                      <option value="odn">Odense</option>
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                  {errors.pickupLocation && <ChakraField.ErrorText>{errors.pickupLocation}</ChakraField.ErrorText>}
+                </ChakraField.Root>
+
+                <ChakraField.Root invalid={!!errors.returnLocation}>
+                  <ChakraField.Label>Return location</ChakraField.Label>
+                  <NativeSelectRoot>
+                    <NativeSelectField
+                      placeholder="Select location"
+                      value={returnLocation}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReturnLocation(e.target.value)}
+                    >
+                      <option value="cph">Copenhagen</option>
+                      <option value="aar">Aarhus</option>
+                      <option value="odn">Odense</option>
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                  {errors.returnLocation && <ChakraField.ErrorText>{errors.returnLocation}</ChakraField.ErrorText>}
+                </ChakraField.Root>
+
+                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                  <GridItem>
+                    <ChakraField.Root invalid={!!errors.pickupAt}>
+                      <ChakraField.Label>Pick up date and time</ChakraField.Label>
+                      <Input
+                        type="datetime-local"
+                        value={pickupAt}
+                        onChange={(e) => setPickupAt(e.target.value)}
+                      />
+                      {errors.pickupAt && <ChakraField.ErrorText>{errors.pickupAt}</ChakraField.ErrorText>}
+                    </ChakraField.Root>
+                  </GridItem>
+                  
+                  <GridItem>
+                    <ChakraField.Root invalid={!!errors.returnAt}>
+                      <ChakraField.Label>Return date and time</ChakraField.Label>
+                      <Input
+                        type="datetime-local"
+                        value={returnAt}
+                        onChange={(e) => setReturnAt(e.target.value)}
+                        min={pickupAt}
+                      />
+                      {errors.returnAt && <ChakraField.ErrorText>{errors.returnAt}</ChakraField.ErrorText>}
+                    </ChakraField.Root>
+                  </GridItem>
+                </Grid>
+              </Stack>
               
               <Box mt={6} textAlign="center">
                 <Button
                   onClick={handleSearch}
-                  colorScheme="blue"
+                  variant="primary"
                   size="lg"
-                  px={8}
-                  py={3}
                 >
                   Search Cars
                 </Button>
@@ -153,22 +169,20 @@ export default function Home() {
               <Button
                 onClick={() => navigate("/cars")}
                 variant="outline"
-                colorScheme="blue"
                 size="lg"
               >
                 Browse All Cars
               </Button>
               <Button
                 onClick={() => navigate("/login")}
-                variant="outline"
-                colorScheme="gray"
+                variant="ghost"
                 size="lg"
               >
                 Sign In
               </Button>
               <Button
                 onClick={() => navigate("/signup")}
-                colorScheme="blue"
+                variant="primary"
                 size="lg"
               >
                 Create Account
