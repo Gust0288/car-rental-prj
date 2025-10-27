@@ -23,6 +23,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { Button } from "../components/Button";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
+import { useUser } from "../context/UserContext";
 
 // Create toaster for notifications
 const toaster = createToaster({
@@ -97,6 +98,7 @@ const SingleCarView = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sp] = useSearchParams();
+  const { user, isLoggedIn } = useUser();
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
@@ -190,9 +192,8 @@ const SingleCarView = () => {
       return;
     }
 
-    // Replace with your real auth source
-    const userId = Number(localStorage.getItem("user_id") || "0");
-    if (!userId) {
+    // Check if user is logged in
+    if (!isLoggedIn || !user) {
       toaster.create({ title: "Please log in to book", type: "warning" });
       navigate("/login?redirect=" + encodeURIComponent(location.pathname));
       return;
@@ -205,7 +206,7 @@ const SingleCarView = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           car_id: car.id,
-          user_id: userId,
+          user_id: user.id,
           pickup_location_id: pickupLocation, // adjust to numeric ids if needed
           return_location_id: returnLocation,
           pickup_at: new Date(pickupAt).toISOString(),
@@ -216,10 +217,12 @@ const SingleCarView = () => {
         const text = await res.text();
         throw new Error(text || "Booking failed");
       }
+      
+      const booking = await res.json();
       toaster.create({ title: "Booking confirmed", type: "success" });
-      // Optionally navigate to a confirmation page
-      // const created = await res.json();
-      // navigate(`/bookings/confirmation/${created.id}`);
+      
+      // Navigate to confirmation page
+      navigate(`/bookings/${booking.id}`);
     } catch (e: unknown) {
       toaster.create({
         title: "Could not complete booking",

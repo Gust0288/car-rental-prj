@@ -1,6 +1,6 @@
 import { Box, Button, Heading, Input, VStack, Text } from "@chakra-ui/react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { httpClient } from "../services/httpClient";
 import { useUser } from "../context/UserContext";
 
@@ -16,6 +16,7 @@ const LoginPage = () => {
   } | null>(null);
   const { login } = useUser();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,8 +48,11 @@ const LoginPage = () => {
           text: `Welcome back, ${response.data.user.name}!`,
         });
 
+        // Get redirect URL from query params or default to profile
+        const redirectTo = searchParams.get("redirect") || "/profile";
+
         setTimeout(() => {
-          navigate("/profile");
+          navigate(redirectTo);
         }, 1000);
       }
     } catch (error: unknown) {

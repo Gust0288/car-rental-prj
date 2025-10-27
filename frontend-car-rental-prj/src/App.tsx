@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ProfilePage from "./pages/ProfilePage";
 import SingleCarView from "./pages/SingleCarView";
+import BookingConfirmation from "./pages/BookingConfirmation";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/car/:id" element={<SingleCarView />} />
+            <Route path="/bookings/:id" element={<BookingConfirmation />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Box>
