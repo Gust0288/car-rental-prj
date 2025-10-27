@@ -9,7 +9,6 @@ import {
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { httpClient } from '../services/httpClient'
-import { useUser } from '../context/UserContext'
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -23,7 +22,6 @@ const SignupPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const navigate = useNavigate()
-  const { login } = useUser()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -42,19 +40,16 @@ const SignupPage = () => {
       const response = await httpClient.post('/users/signup', formData)
       
       if (response.data.message === 'User created successfully') {
-        login({
-          user: response.data.user,
-          token: response.data.token
-        })
-        
+        // Don't auto-login - let user choose to login themselves
         setMessage({
           type: 'success',
-          text: `Welcome ${response.data.user.name}! Account created successfully!`
+          text: `Account created successfully! Please login with your credentials.`
         })
         
+        // Redirect to login page after showing success message
         setTimeout(() => {
-          navigate('/profile')
-        }, 1000)
+          navigate('/login')
+        }, 2000)
       }
     } catch (error: unknown) {
       let errorMessage = 'Something went wrong'
