@@ -1,7 +1,7 @@
 import { Box, Button, Heading, Input, VStack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../services/api";
+import { httpClient } from "../services/httpClient";
 import { useUser } from "../context/UserContext";
 
 const LoginPage = () => {
@@ -31,21 +31,22 @@ const LoginPage = () => {
     setMessage(null);
 
     try {
-      const response = await api.post(
+      const response = await httpClient.post(
         "/users/login",
         formData
       );
 
       if (response.data.message === "Login successful") {
-        // Store user data in context
-        login(response.data.user);
+        login({
+          user: response.data.user,
+          token: response.data.token
+        });
 
         setMessage({
           type: "success",
           text: `Welcome back, ${response.data.user.name}!`,
         });
 
-        // Redirect to profile page after a delay
         setTimeout(() => {
           navigate("/profile");
         }, 1000);
@@ -71,15 +72,14 @@ const LoginPage = () => {
   };
 
   return (
-    <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
-      {/* Main Content */}
+    <Box minH="90vh" bg="gray.50" display="flex" flexDirection="column">
       <Box maxW="md" mx="auto" py={16} px={4} flex="1" display="flex" alignItems="center">
         <VStack gap={8} align="center" w="100%">
           <Heading size="4xl" textAlign="center" color="gray.700">
             Login
           </Heading>
 
-          <Box w="full" bg="white" p={8} borderRadius="md" boxShadow="sm">
+          <Box w={{ base: "95%", md: "500px" }} bg="white" p={8} borderRadius="md" boxShadow="sm">
             {message && (
               <Box
                 p={4}
