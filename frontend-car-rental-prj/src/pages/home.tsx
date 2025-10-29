@@ -44,8 +44,8 @@ export default function Home() {
     const params = new URLSearchParams({
       pickupLocation,
       returnLocation,
-      pickupDate: pickupAt.split('T')[0],
-      returnDate: returnAt.split('T')[0],
+      pickupAt,
+      returnAt,
     });
     navigate(`/cars?${params.toString()}`);
   };

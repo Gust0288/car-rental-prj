@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { 
   Box, 
   Heading, 
@@ -21,6 +22,7 @@ import { CarGrid } from "../components/CarGrid";
 import { getBookedCarIds } from "../services/bookings";
 
 export default function CarsPage() {
+  const [searchParams] = useSearchParams();
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,17 +33,22 @@ export default function CarsPage() {
   const [selectedFuelType, setSelectedFuelType] = useState<string>("all");
   const [selectedCylinders, setSelectedCylinders] = useState<string>("all");
   const [selectedDrive, setSelectedDrive] = useState<string>("all");
-  const [hideBooked, setHideBooked] = useState<boolean>(true);
+  const [showUnavailable, setShowUnavailable] = useState<boolean>(false);
   
-  // Location and date/time filters
-  const [pickupLocation, setPickupLocation] = useState("");
-  const [returnLocation, setReturnLocation] = useState("");
+  // Location and date/time filters - Initialize from URL params
+  const [pickupLocation, setPickupLocation] = useState(searchParams.get("pickupLocation") || "");
+  const [returnLocation, setReturnLocation] = useState(searchParams.get("returnLocation") || "");
   const [pickupAt, setPickupAt] = useState(
-    new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
+    searchParams.get("pickupAt") || new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
   const [returnAt, setReturnAt] = useState(
-    new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
+    searchParams.get("returnAt") || new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
+
+  // Check if rental details were provided from URL params (collapse by default if they were)
+  const hasRentalDetailsFromUrl = searchParams.has("pickupLocation") && searchParams.has("pickupAt");
+  const [isRentalDetailsExpanded, setIsRentalDetailsExpanded] = useState(!hasRentalDetailsFromUrl);
+  const [isVehicleSpecsExpanded, setIsVehicleSpecsExpanded] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -139,8 +146,8 @@ export default function CarsPage() {
       filtered = filtered.filter(car => car.drive === selectedDrive);
     }
 
-    // Filter out booked cars
-    if (hideBooked) {
+    // Filter out booked cars (unless showUnavailable is true)
+    if (!showUnavailable) {
       console.log("Hiding booked cars. Booked IDs:", bookedCarIds);
       console.log("Before filter:", filtered.length);
       filtered = filtered.filter(car => !bookedCarIds.includes(car.id));
@@ -200,12 +207,26 @@ export default function CarsPage() {
               borderColor="blue.200"
               shadow="sm"
             >
-              
-              
-              <Grid 
-                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} 
-                gap={{ base: 3, md: 4 }}
+              <HStack 
+                justify="space-between" 
+                mb={isRentalDetailsExpanded ? 4 : 0}
+                cursor="pointer"
+                onClick={() => setIsRentalDetailsExpanded(!isRentalDetailsExpanded)}
+                _hover={{ opacity: 0.8 }}
               >
+                <Heading size="sm" color="blue.700">
+                  Rental Details
+                </Heading>
+                <Text fontSize="2xl" color="blue.600">
+                  {isRentalDetailsExpanded ? "−" : "+"}
+                </Text>
+              </HStack>
+              
+              {isRentalDetailsExpanded && (
+                <Grid 
+                  templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} 
+                  gap={{ base: 3, md: 4 }}
+                >
                 <GridItem>
                   <ChakraField.Root>
                     <ChakraField.Label>Pick up location</ChakraField.Label>
@@ -267,20 +288,39 @@ export default function CarsPage() {
                   </ChakraField.Root>
                 </GridItem>
               </Grid>
+              )}
             </Box>
 
             {/* Vehicle Specifications Section */}
             <Box>
-              
-              <Grid 
-                templateColumns={{ 
-                  base: "1fr", 
-                  sm: "repeat(2, 1fr)", 
-                  md: "repeat(3, 1fr)",
-                  lg: "repeat(3, 1fr)"
-                }} 
-                gap={{ base: 3, md: 4 }}
+              <HStack 
+                justifyContent="space-between" 
+                cursor="pointer" 
+                onClick={() => setIsVehicleSpecsExpanded(!isVehicleSpecsExpanded)}
+                mb={isVehicleSpecsExpanded ? 3 : 0}
+                p={2}
+                borderRadius="md"
+                _hover={{ opacity: 0.7 }}
+                transition="opacity 0.2s"
               >
+                <Text fontWeight="bold" fontSize="lg" color="gray.700">
+                  Vehicle Specifications
+                </Text>
+                <Text fontSize="xl" color="gray.600" fontWeight="bold">
+                  {isVehicleSpecsExpanded ? "−" : "+"}
+                </Text>
+              </HStack>
+              
+              {isVehicleSpecsExpanded && (
+                <Grid 
+                  templateColumns={{ 
+                    base: "1fr", 
+                    sm: "repeat(2, 1fr)", 
+                    md: "repeat(3, 1fr)",
+                    lg: "repeat(3, 1fr)"
+                  }} 
+                  gap={{ base: 3, md: 4 }}
+                >
                 {/* Make Filter */}
                 <GridItem>
                   <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
@@ -431,6 +471,7 @@ export default function CarsPage() {
                   </NativeSelectRoot>
                 </GridItem>
               </Grid>
+              )}
             </Box>
 
             {/* Divider */}
@@ -451,18 +492,13 @@ export default function CarsPage() {
                 <Text fontSize="md" fontWeight="semibold" color="gray.700">
                   Showing <Text as="span" color="blue.600">{filteredCars.length}</Text> of {uniqueCars.length} cars
                 </Text>
-                {hideBooked && bookedCarIds.length > 0 && (
-                  <Text fontSize="sm" fontWeight="medium" color="orange.600">
-                    ({bookedCarIds.length} currently booked)
-                  </Text>
-                )}
               </HStack>
               
               <Checkbox.Root
-                checked={hideBooked}
+                checked={showUnavailable}
                 onCheckedChange={(e) => {
                   console.log("Checkbox changed:", e.checked);
-                  setHideBooked(!!e.checked);
+                  setShowUnavailable(!!e.checked);
                 }}
                 size="lg"
                 colorPalette="blue"
@@ -472,7 +508,7 @@ export default function CarsPage() {
                   <Checkbox.Indicator />
                 </Checkbox.Control>
                 <Checkbox.Label fontWeight="semibold" fontSize="md">
-                  Hide Booked Cars
+                  Show Booked Cars
                 </Checkbox.Label>
               </Checkbox.Root>
             </HStack>
