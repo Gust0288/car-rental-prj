@@ -7,10 +7,14 @@ import {
   Container, 
   VStack, 
   HStack,
-  Stack
+  Stack,
+  Input,
+  Grid,
+  GridItem
 } from "@chakra-ui/react";
 import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { Checkbox } from "@chakra-ui/react/checkbox";
+import { Field as ChakraField } from "@chakra-ui/react/field";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { CarGrid } from "../components/CarGrid";
@@ -22,7 +26,22 @@ export default function CarsPage() {
   const [error, setError] = useState<string | null>(null);
   const [bookedCarIds, setBookedCarIds] = useState<number[]>([]);
   const [selectedMake, setSelectedMake] = useState<string>("all");
+  const [selectedClass, setSelectedClass] = useState<string>("all");
+  const [selectedTransmission, setSelectedTransmission] = useState<string>("all");
+  const [selectedFuelType, setSelectedFuelType] = useState<string>("all");
+  const [selectedCylinders, setSelectedCylinders] = useState<string>("all");
+  const [selectedDrive, setSelectedDrive] = useState<string>("all");
   const [hideBooked, setHideBooked] = useState<boolean>(true);
+  
+  // Location and date/time filters
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [returnLocation, setReturnLocation] = useState("");
+  const [pickupAt, setPickupAt] = useState(
+    new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
+  const [returnAt, setReturnAt] = useState(
+    new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
 
   useEffect(() => {
     Promise.all([
@@ -95,6 +114,31 @@ export default function CarsPage() {
       filtered = filtered.filter(car => car.make === selectedMake);
     }
 
+    // Filter by class
+    if (selectedClass !== "all") {
+      filtered = filtered.filter(car => car.class === selectedClass);
+    }
+
+    // Filter by transmission
+    if (selectedTransmission !== "all") {
+      filtered = filtered.filter(car => car.transmission === selectedTransmission);
+    }
+
+    // Filter by fuel type
+    if (selectedFuelType !== "all") {
+      filtered = filtered.filter(car => car.fuel_type === selectedFuelType);
+    }
+
+    // Filter by cylinders
+    if (selectedCylinders !== "all") {
+      filtered = filtered.filter(car => car.cylinders?.toString() === selectedCylinders);
+    }
+
+    // Filter by drive
+    if (selectedDrive !== "all") {
+      filtered = filtered.filter(car => car.drive === selectedDrive);
+    }
+
     // Filter out booked cars
     if (hideBooked) {
       console.log("Hiding booked cars. Booked IDs:", bookedCarIds);
@@ -112,48 +156,308 @@ export default function CarsPage() {
 
   // Get unique makes for the dropdown
   const uniqueMakes = [...new Set(uniqueCars.map(car => car.make))].sort();
+  
+  // Get unique classes for the dropdown
+  const uniqueClasses = [...new Set(uniqueCars.map(car => car.class).filter(Boolean))].sort();
+
+  // Get unique transmissions for the dropdown
+  const uniqueTransmissions = [...new Set(uniqueCars.map(car => car.transmission).filter(Boolean))].sort();
+
+  // Get unique fuel types for the dropdown
+  const uniqueFuelTypes = [...new Set(uniqueCars.map(car => car.fuel_type).filter(Boolean))].sort();
+
+  // Get unique cylinders for the dropdown
+  const uniqueCylinders = [...new Set(uniqueCars.map(car => car.cylinders).filter(Boolean))].sort((a, b) => (a || 0) - (b || 0));
+
+  // Get unique drives for the dropdown
+  const uniqueDrives = [...new Set(uniqueCars.map(car => car.drive).filter(Boolean))].sort();
 
   return (
     <Box p={6}>
       <Container maxW="7xl">
         <Heading size="lg" mb={6} textAlign="center">
-          All Available Cars
+          Car Selection
         </Heading>
 
         {/* Filter Controls */}
         <Box 
-          mb={6} 
-          p={4} 
-          bg="gray.50" 
-          borderRadius="md" 
+          mb={8} 
+          p={{ base: 4, md: 6 }}
+          bg="white"
+          borderRadius="xl" 
           border="1px solid"
           borderColor="gray.200"
+          shadow="lg"
         >
-          <Stack gap={4}>
-            {/* Make Filter */}
-            <Box>
-              <Text mb={2} fontWeight="medium" fontSize="sm">
-                Filter by Make
-              </Text>
-              <NativeSelectRoot>
-                <NativeSelectField 
-                  value={selectedMake} 
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedMake(e.target.value)}
-                  bg="white"
-                  borderColor="gray.300"
-                >
-                  <option value="all">All Makes</option>
-                  {uniqueMakes.map(make => (
-                    <option key={make} value={make}>
-                      {capitalizeString(make)}
-                    </option>
-                  ))}
-                </NativeSelectField>
-              </NativeSelectRoot>
+          <Stack gap={6}>
+            {/* Location and Date/Time Section */}
+            <Box 
+              p={{ base: 4, md: 5 }} 
+              bg="gradient-to-br"
+              bgGradient="linear(to-br, blue.50, blue.100)"
+              borderRadius="lg" 
+              border="2px solid" 
+              borderColor="blue.200"
+              shadow="sm"
+            >
+              
+              
+              <Grid 
+                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} 
+                gap={{ base: 3, md: 4 }}
+              >
+                <GridItem>
+                  <ChakraField.Root>
+                    <ChakraField.Label>Pick up location</ChakraField.Label>
+                    <NativeSelectRoot>
+                      <NativeSelectField
+                        placeholder="Any location"
+                        value={pickupLocation}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
+                        bg="white"
+                      >
+                        <option value="cph">Copenhagen</option>
+                        <option value="aar">Aarhus</option>
+                        <option value="odn">Odense</option>
+                      </NativeSelectField>
+                    </NativeSelectRoot>
+                  </ChakraField.Root>
+                </GridItem>
+
+                <GridItem>
+                  <ChakraField.Root>
+                    <ChakraField.Label>Return location</ChakraField.Label>
+                    <NativeSelectRoot>
+                      <NativeSelectField
+                        placeholder="Any location"
+                        value={returnLocation}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReturnLocation(e.target.value)}
+                        bg="white"
+                      >
+                        <option value="cph">Copenhagen</option>
+                        <option value="aar">Aarhus</option>
+                        <option value="odn">Odense</option>
+                      </NativeSelectField>
+                    </NativeSelectRoot>
+                  </ChakraField.Root>
+                </GridItem>
+
+                <GridItem>
+                  <ChakraField.Root>
+                    <ChakraField.Label>Pick up date and time</ChakraField.Label>
+                    <Input
+                      type="datetime-local"
+                      value={pickupAt}
+                      onChange={(e) => setPickupAt(e.target.value)}
+                      bg="white"
+                    />
+                  </ChakraField.Root>
+                </GridItem>
+                
+                <GridItem>
+                  <ChakraField.Root>
+                    <ChakraField.Label>Return date and time</ChakraField.Label>
+                    <Input
+                      type="datetime-local"
+                      value={returnAt}
+                      onChange={(e) => setReturnAt(e.target.value)}
+                      min={pickupAt}
+                      bg="white"
+                    />
+                  </ChakraField.Root>
+                </GridItem>
+              </Grid>
             </Box>
 
-            {/* Hide Booked Toggle */}
-            <HStack justify="space-between">
+            {/* Vehicle Specifications Section */}
+            <Box>
+              
+              <Grid 
+                templateColumns={{ 
+                  base: "1fr", 
+                  sm: "repeat(2, 1fr)", 
+                  md: "repeat(3, 1fr)",
+                  lg: "repeat(3, 1fr)"
+                }} 
+                gap={{ base: 3, md: 4 }}
+              >
+                {/* Make Filter */}
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
+                    Make
+                  </Text>
+                  <NativeSelectRoot>
+                    <NativeSelectField 
+                      value={selectedMake} 
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedMake(e.target.value)}
+                      bg="white"
+                      borderColor="gray.300"
+                      borderRadius="md"
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", shadow: "outline" }}
+                    >
+                      <option value="all">All Makes</option>
+                      {uniqueMakes.map(make => (
+                        <option key={make} value={make}>
+                          {capitalizeString(make)}
+                        </option>
+                      ))}
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </GridItem>
+
+                {/* Class Filter */}
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
+                    Class
+                  </Text>
+                  <NativeSelectRoot>
+                    <NativeSelectField 
+                      value={selectedClass} 
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedClass(e.target.value)}
+                      bg="white"
+                      borderColor="gray.300"
+                      borderRadius="md"
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", shadow: "outline" }}
+                    >
+                      <option value="all">All Classes</option>
+                      {uniqueClasses.map(carClass => (
+                        <option key={carClass} value={carClass}>
+                          {capitalizeString(carClass || '')}
+                        </option>
+                      ))}
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </GridItem>
+
+                {/* Transmission Filter */}
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
+                    Transmission
+                  </Text>
+                  <NativeSelectRoot>
+                    <NativeSelectField 
+                      value={selectedTransmission} 
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedTransmission(e.target.value)}
+                      bg="white"
+                      borderColor="gray.300"
+                      borderRadius="md"
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", shadow: "outline" }}
+                    >
+                      <option value="all">All Transmissions</option>
+                      {uniqueTransmissions.map(transmission => (
+                        <option key={transmission} value={transmission}>
+                          {capitalizeString(transmission || '')}
+                        </option>
+                      ))}
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </GridItem>
+
+                {/* Fuel Type Filter */}
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
+                    Fuel Type
+                  </Text>
+                  <NativeSelectRoot>
+                    <NativeSelectField 
+                      value={selectedFuelType} 
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedFuelType(e.target.value)}
+                      bg="white"
+                      borderColor="gray.300"
+                      borderRadius="md"
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", shadow: "outline" }}
+                    >
+                      <option value="all">All Fuel Types</option>
+                      {uniqueFuelTypes.map(fuelType => (
+                        <option key={fuelType} value={fuelType}>
+                          {capitalizeString(fuelType || '')}
+                        </option>
+                      ))}
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </GridItem>
+
+                {/* Cylinders Filter */}
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
+                    Cylinders
+                  </Text>
+                  <NativeSelectRoot>
+                    <NativeSelectField 
+                      value={selectedCylinders} 
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCylinders(e.target.value)}
+                      bg="white"
+                      borderColor="gray.300"
+                      borderRadius="md"
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", shadow: "outline" }}
+                    >
+                      <option value="all">All Cylinders</option>
+                      {uniqueCylinders.map(cylinders => (
+                        <option key={cylinders} value={cylinders?.toString()}>
+                          {cylinders} {cylinders === 1 ? 'cylinder' : 'cylinders'}
+                        </option>
+                      ))}
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </GridItem>
+
+                {/* Drive Filter */}
+                <GridItem>
+                  <Text mb={2} fontWeight="semibold" fontSize="sm" color="gray.600">
+                    Drive
+                  </Text>
+                  <NativeSelectRoot>
+                    <NativeSelectField 
+                      value={selectedDrive} 
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedDrive(e.target.value)}
+                      bg="white"
+                      borderColor="gray.300"
+                      borderRadius="md"
+                      _hover={{ borderColor: "blue.400" }}
+                      _focus={{ borderColor: "blue.500", shadow: "outline" }}
+                    >
+                      <option value="all">All Drive Types</option>
+                      {uniqueDrives.map(drive => (
+                        <option key={drive} value={drive}>
+                          {drive?.toUpperCase()}
+                        </option>
+                      ))}
+                    </NativeSelectField>
+                  </NativeSelectRoot>
+                </GridItem>
+              </Grid>
+            </Box>
+
+            {/* Divider */}
+            <Box height="1px" bg="gray.200" my={2} />
+          </Stack>
+
+          {/* Results count and Hide Booked Toggle */}
+          <Box 
+            mt={4} 
+            p={4} 
+            bg="gray.50" 
+            borderRadius="lg"
+            border="1px solid"
+            borderColor="gray.200"
+          >
+            <HStack justify="space-between" flexWrap="wrap" gap={4}>
+              <HStack gap={4} flexWrap="wrap">
+                <Text fontSize="md" fontWeight="semibold" color="gray.700">
+                  Showing <Text as="span" color="blue.600">{filteredCars.length}</Text> of {uniqueCars.length} cars
+                </Text>
+                {hideBooked && bookedCarIds.length > 0 && (
+                  <Text fontSize="sm" fontWeight="medium" color="orange.600">
+                    ({bookedCarIds.length} currently booked)
+                  </Text>
+                )}
+              </HStack>
+              
               <Checkbox.Root
                 checked={hideBooked}
                 onCheckedChange={(e) => {
@@ -167,22 +471,12 @@ export default function CarsPage() {
                 <Checkbox.Control>
                   <Checkbox.Indicator />
                 </Checkbox.Control>
-                <Checkbox.Label fontWeight="medium" fontSize="sm">
+                <Checkbox.Label fontWeight="semibold" fontSize="md">
                   Hide Booked Cars
                 </Checkbox.Label>
               </Checkbox.Root>
             </HStack>
-          </Stack>
-
-          {/* Results count */}
-          <Text mt={3} fontSize="sm" color="gray.600">
-            Showing {filteredCars.length} of {uniqueCars.length} cars
-            {hideBooked && bookedCarIds.length > 0 && (
-              <Text as="span" ml={2} color="blue.600">
-                ({bookedCarIds.length} currently booked)
-              </Text>
-            )}
-          </Text>
+          </Box>
         </Box>
 
         
