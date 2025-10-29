@@ -4,8 +4,9 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import routes from "./routes/index.js";
 import { setupSwagger } from "./config/swagger.js";
-import { pool } from "./config/database.js";
+import { pool, userPool } from "./config/database.js";
 import bcrypt from "bcrypt";
+import { logger } from "./utils/logger.js";
 
 const app = express();
 
@@ -35,8 +36,14 @@ app.post("/api/auth/signup", async (req: Request, res: Response) => {
   try {
     const { username, name, email, password, confirmPassword } = req.body;
 
+    logger.info("Signup attempt", { username, email });
+
     // Validate required fields
     if (!username || !name || !email || !password || !confirmPassword) {
+      logger.warn("Signup failed: missing required fields", {
+        username,
+        email,
+      });
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -45,6 +52,7 @@ app.post("/api/auth/signup", async (req: Request, res: Response) => {
 
     // Check if passwords match
     if (password !== confirmPassword) {
+      logger.warn("Signup failed: passwords do not match", { username, email });
       return res.status(400).json({
         success: false,
         message: "Passwords do not match",
@@ -52,12 +60,13 @@ app.post("/api/auth/signup", async (req: Request, res: Response) => {
     }
 
     // Check if user already exists
-    const existingUser = await pool.query(
+    const existingUser = await userPool.query(
       "SELECT id FROM public.users WHERE email = $1 OR username = $2",
       [email, username]
     );
 
     if (existingUser.rows.length > 0) {
+      logger.warn("Signup failed: user already exists", { username, email });
       return res.status(409).json({
         success: false,
         message: "User with this email or username already exists",
@@ -68,13 +77,19 @@ app.post("/api/auth/signup", async (req: Request, res: Response) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert new user
-    const result = await pool.query(
-      "INSERT INTO public.users (username, name, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, name, email, created_at",
-      [username, name, email, hashedPassword]
+    // Insert new user (matching the user database schema)
+    const result = await userPool.query(
+      "INSERT INTO public.users (username, name, user_last_name, email, password, user_created_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id, username, name, user_last_name, email, user_created_at",
+      [username, name, "", email, hashedPassword]
     );
 
     const newUser = result.rows[0];
+
+    logger.info("User created successfully", {
+      userId: newUser.id,
+      username: newUser.username,
+      email: newUser.email,
+    });
 
     res.status(201).json({
       success: true,
@@ -84,11 +99,14 @@ app.post("/api/auth/signup", async (req: Request, res: Response) => {
         username: newUser.username,
         name: newUser.name,
         email: newUser.email,
-        createdAt: newUser.created_at,
+        createdAt: newUser.user_created_at,
       },
     });
   } catch (error) {
-    console.error("Signup error:", error);
+    logger.error("Signup error", error, {
+      username: req.body?.username,
+      email: req.body?.email,
+    });
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -102,8 +120,11 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
+    logger.info("Login attempt", { email });
+
     // Validate required fields
     if (!email || !password) {
+      logger.warn("Login failed: missing credentials", { email });
       return res.status(400).json({
         success: false,
         message: "Email and password are required",
@@ -111,12 +132,13 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
     }
 
     // Find user by email
-    const userResult = await pool.query(
-      "SELECT id, username, name, email, password FROM public.users WHERE email = $1",
+    const userResult = await userPool.query(
+      "SELECT id, username, name, email, password FROM public.users WHERE email = $1 AND user_deleted_at IS NULL",
       [email]
     );
 
     if (userResult.rows.length === 0) {
+      logger.warn("Login failed: user not found", { email });
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
@@ -129,11 +151,18 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
+      logger.warn("Login failed: invalid password", { email, userId: user.id });
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
       });
     }
+
+    logger.info("Login successful", {
+      email,
+      userId: user.id,
+      username: user.username,
+    });
 
     // Return user data (without password)
     res.status(200).json({
@@ -147,7 +176,7 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    logger.error("Login error", error, { email: req.body?.email });
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -158,6 +187,9 @@ app.post("/api/auth/login", async (req: Request, res: Response) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`API running on http://localhost:${PORT}`);
-  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+  logger.info(`API server started`, {
+    port: PORT,
+    apiUrl: `http://localhost:${PORT}`,
+    docsUrl: `http://localhost:${PORT}/api-docs`,
+  });
 });
