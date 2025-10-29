@@ -1,9 +1,9 @@
 -- Create bookings table for car rental system
--- Run this in your car_rental_db database
+-- Run this in your car_rental_user_data database
 
 CREATE TABLE IF NOT EXISTS bookings (
   id                  BIGSERIAL PRIMARY KEY,
-  car_id              BIGINT NOT NULL REFERENCES cars(id),
+  car_id              BIGINT NOT NULL, -- References cars(id) in car_rental_db (cross-database reference)
   user_id             BIGINT NOT NULL, -- from users service
   pickup_location_id  TEXT,            -- use BIGINT if you have locations table
   return_location_id  TEXT,

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { pool } from "../config/database.js";
+import { pool, userPool } from "../config/database.js";
 
 // Create a new booking
 export const createBooking = async (req: Request, res: Response) => {
@@ -49,7 +49,7 @@ export const createBooking = async (req: Request, res: Response) => {
     const priceTotal = rentalDays * dailyRate;
 
     // Insert the booking
-    const { rows } = await pool.query(
+    const { rows } = await userPool.query(
       `INSERT INTO bookings (
         car_id, 
         user_id, 
@@ -101,31 +101,56 @@ export const getUserBookings = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
-    const { rows } = await pool.query(
+    // Get bookings from user database
+    const { rows: bookings } = await userPool.query(
       `SELECT 
-        b.id,
-        b.car_id,
-        b.user_id,
-        b.pickup_location_id,
-        b.return_location_id,
-        b.pickup_at,
-        b.return_at,
-        b.status,
-        b.price_total,
-        b.created_at,
-        b.updated_at,
-        c.make,
-        c.model,
-        c.year,
-        c.img_path
-      FROM bookings b
-      JOIN cars c ON b.car_id = c.id
-      WHERE b.user_id = $1
-      ORDER BY b.created_at DESC`,
+        id,
+        car_id,
+        user_id,
+        pickup_location_id,
+        return_location_id,
+        pickup_at,
+        return_at,
+        status,
+        price_total,
+        created_at,
+        updated_at
+      FROM bookings
+      WHERE user_id = $1
+      ORDER BY created_at DESC`,
       [userId]
     );
 
-    res.json(rows);
+    // If no bookings, return empty array
+    if (bookings.length === 0) {
+      return res.json([]);
+    }
+
+    // Get car details from cars database
+    const carIds = bookings.map(b => b.car_id);
+    const { rows: cars } = await pool.query(
+      `SELECT id, make, model, year, img_path
+       FROM cars
+       WHERE id = ANY($1)`,
+      [carIds]
+    );
+
+    // Create a map of car details by id
+    const carsMap = new Map(cars.map(car => [car.id, car]));
+
+    // Combine booking and car data
+    const bookingsWithCarDetails = bookings.map(booking => {
+      const car = carsMap.get(booking.car_id) || {};
+      return {
+        ...booking,
+        make: car.make,
+        model: car.model,
+        year: car.year,
+        img_path: car.img_path,
+      };
+    });
+
+    res.json(bookingsWithCarDetails);
   } catch (error) {
     console.error("Error fetching user bookings:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -137,36 +162,53 @@ export const getBookingById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const { rows } = await pool.query(
+    // Get booking from user database
+    const { rows: bookings } = await userPool.query(
       `SELECT 
-        b.id,
-        b.car_id,
-        b.user_id,
-        b.pickup_location_id,
-        b.return_location_id,
-        b.pickup_at,
-        b.return_at,
-        b.status,
-        b.price_total,
-        b.created_at,
-        b.updated_at,
-        c.make,
-        c.model,
-        c.year,
-        c.class,
-        c.fuel_type,
-        c.img_path
-      FROM bookings b
-      JOIN cars c ON b.car_id = c.id
-      WHERE b.id = $1`,
+        id,
+        car_id,
+        user_id,
+        pickup_location_id,
+        return_location_id,
+        pickup_at,
+        return_at,
+        status,
+        price_total,
+        created_at,
+        updated_at
+      FROM bookings
+      WHERE id = $1`,
       [id]
     );
 
-    if (rows.length === 0) {
+    if (bookings.length === 0) {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    res.json(rows[0]);
+    const booking = bookings[0];
+
+    // Get car details from cars database
+    const { rows: cars } = await pool.query(
+      `SELECT make, model, year, class, fuel_type, img_path
+       FROM cars
+       WHERE id = $1`,
+      [booking.car_id]
+    );
+
+    const car = cars[0] || {};
+
+    // Combine booking and car data
+    const bookingWithCarDetails = {
+      ...booking,
+      make: car.make,
+      model: car.model,
+      year: car.year,
+      class: car.class,
+      fuel_type: car.fuel_type,
+      img_path: car.img_path,
+    };
+
+    res.json(bookingWithCarDetails);
   } catch (error) {
     console.error("Error fetching booking:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -193,7 +235,7 @@ export const updateBookingStatus = async (req: Request, res: Response) => {
   }
 
   try {
-    const { rows } = await pool.query(
+    const { rows } = await userPool.query(
       `UPDATE bookings 
        SET status = $1, updated_at = now() 
        WHERE id = $2 
@@ -217,7 +259,7 @@ export const cancelBooking = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const { rows } = await pool.query(
+    const { rows } = await userPool.query(
       `UPDATE bookings 
        SET status = 'canceled', updated_at = now() 
        WHERE id = $1 
@@ -247,7 +289,7 @@ export const checkAvailability = async (req: Request, res: Response) => {
   }
 
   try {
-    const { rows } = await pool.query(
+    const { rows } = await userPool.query(
       `SELECT COUNT(*) as conflict_count
        FROM bookings
        WHERE car_id = $1
