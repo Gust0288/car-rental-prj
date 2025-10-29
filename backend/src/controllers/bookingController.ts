@@ -311,3 +311,31 @@ export const checkAvailability = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Get all active bookings (for filtering booked cars)
+export const getAllBookings = async (req: Request, res: Response) => {
+  try {
+    const { rows } = await userPool.query(
+      `SELECT 
+        id,
+        car_id,
+        user_id,
+        pickup_location_id,
+        return_location_id,
+        pickup_at,
+        return_at,
+        status,
+        price_total,
+        created_at,
+        updated_at
+      FROM bookings
+      WHERE status IN ('pending', 'confirmed', 'in_progress')
+      ORDER BY created_at DESC`
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching all bookings:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

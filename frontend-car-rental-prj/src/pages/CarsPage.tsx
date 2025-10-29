@@ -1,19 +1,42 @@
 import { useEffect, useState } from "react";
-import { Box, Heading, Spinner, Text, Container, VStack } from "@chakra-ui/react";
+import { 
+  Box, 
+  Heading, 
+  Spinner, 
+  Text, 
+  Container, 
+  VStack, 
+  HStack,
+  Stack
+} from "@chakra-ui/react";
+import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
+import { Checkbox } from "@chakra-ui/react/checkbox";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { CarGrid } from "../components/CarGrid";
+import { getBookedCarIds } from "../services/bookings";
 
 export default function CarsPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookedCarIds, setBookedCarIds] = useState<number[]>([]);
+  const [selectedMake, setSelectedMake] = useState<string>("all");
+  const [hideBooked, setHideBooked] = useState<boolean>(true);
 
   useEffect(() => {
-    getCars()
-      .then(setCars)
+    Promise.all([
+      getCars(),
+      getBookedCarIds()
+    ])
+      .then(([carsData, bookedIds]) => {
+        console.log("Cars loaded:", carsData.length);
+        console.log("Booked car IDs:", bookedIds);
+        setCars(carsData);
+        setBookedCarIds(bookedIds);
+      })
       .catch((err) => {
-        console.error("Failed to fetch cars:", err);
+        console.error("Failed to fetch data:", err);
         setError(
           "Failed to load cars. Please make sure the backend server is running."
         );
@@ -63,8 +86,32 @@ export default function CarsPage() {
     return sortedGrouped;
   };
 
+  // Apply filters
+  const applyFilters = (cars: Car[]) => {
+    let filtered = [...cars];
+
+    // Filter by make
+    if (selectedMake !== "all") {
+      filtered = filtered.filter(car => car.make === selectedMake);
+    }
+
+    // Filter out booked cars
+    if (hideBooked) {
+      console.log("Hiding booked cars. Booked IDs:", bookedCarIds);
+      console.log("Before filter:", filtered.length);
+      filtered = filtered.filter(car => !bookedCarIds.includes(car.id));
+      console.log("After filter:", filtered.length);
+    }
+
+    return filtered;
+  };
+
   const uniqueCars = removeDuplicateCars(cars);
-  const groupedCars = groupCarsByMake(uniqueCars);
+  const filteredCars = applyFilters(uniqueCars);
+  const groupedCars = groupCarsByMake(filteredCars);
+
+  // Get unique makes for the dropdown
+  const uniqueMakes = [...new Set(uniqueCars.map(car => car.make))].sort();
 
   return (
     <Box p={6}>
@@ -72,6 +119,74 @@ export default function CarsPage() {
         <Heading size="lg" mb={6} textAlign="center">
           All Available Cars
         </Heading>
+
+        {/* Filter Controls */}
+        <Box 
+          mb={6} 
+          p={4} 
+          bg="gray.50" 
+          borderRadius="md" 
+          border="1px solid"
+          borderColor="gray.200"
+        >
+          <Stack gap={4}>
+            {/* Make Filter */}
+            <Box>
+              <Text mb={2} fontWeight="medium" fontSize="sm">
+                Filter by Make
+              </Text>
+              <NativeSelectRoot>
+                <NativeSelectField 
+                  value={selectedMake} 
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedMake(e.target.value)}
+                  bg="white"
+                  borderColor="gray.300"
+                >
+                  <option value="all">All Makes</option>
+                  {uniqueMakes.map(make => (
+                    <option key={make} value={make}>
+                      {capitalizeString(make)}
+                    </option>
+                  ))}
+                </NativeSelectField>
+              </NativeSelectRoot>
+            </Box>
+
+            {/* Hide Booked Toggle */}
+            <HStack justify="space-between">
+              <Checkbox.Root
+                checked={hideBooked}
+                onCheckedChange={(e) => {
+                  console.log("Checkbox changed:", e.checked);
+                  setHideBooked(!!e.checked);
+                }}
+                size="lg"
+                colorPalette="blue"
+              >
+                <Checkbox.HiddenInput />
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Checkbox.Label fontWeight="medium" fontSize="sm">
+                  Hide Booked Cars
+                </Checkbox.Label>
+              </Checkbox.Root>
+            </HStack>
+          </Stack>
+
+          {/* Results count */}
+          <Text mt={3} fontSize="sm" color="gray.600">
+            Showing {filteredCars.length} of {uniqueCars.length} cars
+            {hideBooked && bookedCarIds.length > 0 && (
+              <Text as="span" ml={2} color="blue.600">
+                ({bookedCarIds.length} currently booked)
+              </Text>
+            )}
+          </Text>
+        </Box>
+
+        
+        
         
         {loading ? (
           <Box textAlign="center">
