@@ -8,7 +8,7 @@ export const getAllCars = async (_req: Request, res: Response) => {
     const { rows } = await pool.query(
       `SELECT id, make, model, year, class, city_mpg, highway_mpg, 
               combination_mpg, fuel_type, drive, transmission, 
-              cylinders, displacement, img_path 
+              cylinders, displacement, img_path, car_location
        FROM public.cars 
        ORDER BY id ASC`
     );
@@ -147,6 +147,31 @@ export const getCarsByDrive = async (req: Request, res: Response) => {
     res.json(rows);
   } catch (error) {
     logger.error("Failed to fetch cars by drive type", error, { drive });
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getCarsByLocation = async (req: Request, res: Response) => {
+  const { location } = req.params;
+
+  try {
+    logger.info("Fetching cars by location", { location });
+    const { rows } = await pool.query(
+      `SELECT id, make, model, year, class, city_mpg, highway_mpg,
+              combination_mpg, fuel_type, drive, transmission,
+              cylinders, displacement, img_path, car_location
+       FROM public.cars
+       WHERE LOWER(car_location) = LOWER($1)
+       ORDER BY id ASC`,
+      [location]
+    );
+    logger.info("Successfully fetched cars by location", {
+      location,
+      count: rows.length,
+    });
+    res.json(rows);
+  } catch (error) {
+    logger.error("Failed to fetch cars by location", error, { location });
     res.status(500).json({ error: "Internal server error" });
   }
 };

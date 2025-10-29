@@ -6,6 +6,7 @@ import {
   getCarsByClass,
   getCarsByFuelType,
   getCarsByDrive,
+  getCarsByLocation,
 } from "../controllers/carController.js";
 
 const router = Router();
@@ -16,5 +17,6 @@ router.get("/year/:year", getCarsByYear);
 router.get("/class/:class", getCarsByClass);
 router.get("/fuel-type/:fuelType", getCarsByFuelType);
 router.get("/drive/:drive", getCarsByDrive);
+router.get("/location/:location", getCarsByLocation);
 
 export default router;
