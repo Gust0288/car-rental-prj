@@ -1,5 +1,5 @@
 import { SimpleGrid, Text } from "@chakra-ui/react";
-import { CarCard } from "./CarCard";
+import { CarCard } from "../Components/CarCard";
 
 interface Car {
   id: number;

@@ -20,7 +20,7 @@ import { Field as ChakraField } from "@chakra-ui/react/field";
 import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { Separator } from "@chakra-ui/react/separator";
 import { FiArrowLeft } from "react-icons/fi";
-import { Button } from "../components/Button";
+import { Button } from "../Components/Button";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { useUser } from "../context/UserContext";

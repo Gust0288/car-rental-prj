@@ -1,8 +1,39 @@
 import { Box, Button, Heading, Input, VStack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { httpClient } from "../services/httpClient";
+import { authService } from "../services/api-client";
 import { useUser } from "../context/UserContext";
+
+
+const RESPONSIVE_WIDTHS = {
+  container: { base: "95%", md: "500px" },
+  maxWidth: "md"
+};
+
+const MESSAGE_STYLES = {
+  backgrounds: { success: "green.100", error: "red.100", info: "blue.100" },
+  borderColors: { success: "green.500", error: "red.500", info: "blue.500" },
+  textColors: { success: "green.700", error: "red.700", info: "blue.700" }
+};
+
+const FORM_STYLING = {
+  inputSize: "lg" as const,
+  buttonSize: "lg" as const,
+  containerPadding: 8,
+  borderRadius: "md" as const
+};
+
+const LAYOUT_SPACING = {
+  containerPadding: 16,
+  formGap: 4,
+  sectionGap: 8,
+  buttonMarginTop: 4
+};
+
+const NAVIGATION_CONFIG = {
+  redirectDelay: 1000,
+  defaultRedirect: "/profile"
+};
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -32,10 +63,7 @@ const LoginPage = () => {
     setMessage(null);
 
     try {
-      const response = await httpClient.post(
-        "/users/login",
-        formData
-      );
+      const response = await authService.login(formData);
 
       if (response.data.message === "Login successful") {
         login({
@@ -49,11 +77,11 @@ const LoginPage = () => {
         });
 
         // Get redirect URL from query params or default to profile
-        const redirectTo = searchParams.get("redirect") || "/profile";
+        const redirectTo = searchParams.get("redirect") || NAVIGATION_CONFIG.defaultRedirect;
 
         setTimeout(() => {
           navigate(redirectTo);
-        }, 1000);
+        }, NAVIGATION_CONFIG.redirectDelay);
       }
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
@@ -77,42 +105,24 @@ const LoginPage = () => {
 
   return (
     <Box minH="90vh" bg="gray.50" display="flex" flexDirection="column">
-      <Box maxW="md" mx="auto" py={16} px={4} flex="1" display="flex" alignItems="center">
-        <VStack gap={8} align="center" w="100%">
+      <Box maxW={RESPONSIVE_WIDTHS.maxWidth} mx="auto" py={LAYOUT_SPACING.containerPadding} px={4} flex="1" display="flex" alignItems="center">
+        <VStack gap={LAYOUT_SPACING.sectionGap} align="center" w="100%">
           <Heading size="4xl" textAlign="center" color="gray.700">
             Login
           </Heading>
 
-          <Box w={{ base: "95%", md: "500px" }} bg="white" p={8} borderRadius="md" boxShadow="sm">
+          <Box w={RESPONSIVE_WIDTHS.container} bg="white" p={FORM_STYLING.containerPadding} borderRadius={FORM_STYLING.borderRadius} boxShadow="sm">
             {message && (
               <Box
                 p={4}
                 mb={4}
-                borderRadius="md"
-                bg={
-                  message.type === "success"
-                    ? "green.100"
-                    : message.type === "error"
-                    ? "red.100"
-                    : "blue.100"
-                }
+                borderRadius={FORM_STYLING.borderRadius}
+                bg={MESSAGE_STYLES.backgrounds[message.type]}
                 borderLeft="4px solid"
-                borderColor={
-                  message.type === "success"
-                    ? "green.500"
-                    : message.type === "error"
-                    ? "red.500"
-                    : "blue.500"
-                }
+                borderColor={MESSAGE_STYLES.borderColors[message.type]}
               >
                 <Text
-                  color={
-                    message.type === "success"
-                      ? "green.700"
-                      : message.type === "error"
-                      ? "red.700"
-                      : "blue.700"
-                  }
+                  color={MESSAGE_STYLES.textColors[message.type]}
                   fontWeight="bold"
                 >
                   {message.text}
@@ -121,7 +131,7 @@ const LoginPage = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <VStack gap={4} align="stretch">
+              <VStack gap={LAYOUT_SPACING.formGap} align="stretch">
                 <Box>
                   <Text mb={2} fontWeight="semibold">
                     Email
@@ -132,7 +142,7 @@ const LoginPage = () => {
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_STYLING.inputSize}
                     required
                   />
                 </Box>
@@ -147,7 +157,7 @@ const LoginPage = () => {
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_STYLING.inputSize}
                     required
                   />
                 </Box>
@@ -155,10 +165,10 @@ const LoginPage = () => {
                 <Button
                   type="submit"
                   colorPalette="gray"
-                  size="lg"
+                  size={FORM_STYLING.buttonSize}
                   w="full"
                   loading={isLoading}
-                  mt={4}
+                  mt={LAYOUT_SPACING.buttonMarginTop}
                 >
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>

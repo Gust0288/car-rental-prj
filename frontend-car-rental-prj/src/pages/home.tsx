@@ -14,7 +14,7 @@ import {
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/Button";
+import { Button } from "../Components/Button";
 
 export default function Home() {
   const navigate = useNavigate();
