@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
-import { NavBar } from "./components/Navbar";
-import { Footer } from "./components/Footer";
+import { NavBar } from "./Components/Navbar";
+import { Footer } from "./Components/Footer";
 import Home from "./pages/home";
 import CarsPage from "./pages/CarsPage";
 import LoginPage from "./pages/LoginPage";

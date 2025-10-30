@@ -1,13 +1,19 @@
 import { Box, HStack, VStack, Text, Button, Input } from "@chakra-ui/react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
+  };
+
+  
+  const isActivePath = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
@@ -41,38 +47,41 @@ export const NavBar = () => {
 
         <HStack gap={2}>
           <Button
-            variant="ghost"
+            variant={isActivePath("/") ? "solid" : "ghost"}
             size="sm"
-            color="white"
-            _hover={{ bg: "blue.600" }}
+            color={isActivePath("/") ? "blue.500" : "white"}
+            bg={isActivePath("/") ? "white" : "transparent"}
+            _hover={{ bg: isActivePath("/") ? "gray.100" : "blue.600" }}
             onClick={() => navigate("/")}
           >
             Home
           </Button>
           <Button
-            variant="ghost"
+            variant={isActivePath("/cars") ? "solid" : "ghost"}
             size="sm"
-            color="white"
-            _hover={{ bg: "blue.600" }}
+            color={isActivePath("/cars") ? "blue.500" : "white"}
+            bg={isActivePath("/cars") ? "white" : "transparent"}
+            _hover={{ bg: isActivePath("/cars") ? "gray.100" : "blue.600" }}
             onClick={() => navigate("/cars")}
           >
             Cars
           </Button>
           <Button
-            variant="ghost"
+            variant={isActivePath("/login") ? "solid" : "ghost"}
             size="sm"
-            color="white"
-            _hover={{ bg: "blue.600" }}
+            color={isActivePath("/login") ? "blue.500" : "white"}
+            bg={isActivePath("/login") ? "white" : "transparent"}
+            _hover={{ bg: isActivePath("/login") ? "gray.100" : "blue.600" }}
             onClick={() => navigate("/login")}
           >
             Login
           </Button>
           <Button
-            variant="solid"
+            variant={isActivePath("/signup") ? "solid" : "ghost"}
             size="sm"
-            bg="white"
-            color="blue.500"
-            _hover={{ bg: "gray.100" }}
+            color={isActivePath("/signup") ? "blue.500" : "white"}
+            bg={isActivePath("/signup") ? "white" : "transparent"}
+            _hover={{ bg: isActivePath("/signup") ? "gray.100" : "blue.600" }}
             onClick={() => navigate("/signup")}
           >
             Sign Up
@@ -119,7 +128,7 @@ export const NavBar = () => {
             borderColor="gray.200"
           >
             <Button
-              variant="outline"
+              variant={isActivePath("/") ? "solid" : "outline"}
               colorScheme="blue"
               onClick={() => {
                 navigate("/");
@@ -128,7 +137,7 @@ export const NavBar = () => {
               width="100%"
               justifyContent="center"
               borderWidth="1px"
-              _hover={{ bg: "blue.50" }}
+              _hover={{ bg: isActivePath("/") ? "blue.600" : "blue.50" }}
               size="md"
               fontSize="md"
               fontWeight="medium"
@@ -137,7 +146,7 @@ export const NavBar = () => {
               Home
             </Button>
             <Button
-              variant="outline"
+              variant={isActivePath("/cars") ? "solid" : "outline"}
               colorScheme="blue"
               onClick={() => {
                 navigate("/cars");
@@ -146,7 +155,7 @@ export const NavBar = () => {
               width="100%"
               justifyContent="center"
               borderWidth="1px"
-              _hover={{ bg: "blue.50" }}
+              _hover={{ bg: isActivePath("/cars") ? "blue.600" : "blue.50" }}
               size="md"
               fontSize="md"
               fontWeight="medium"
@@ -155,7 +164,7 @@ export const NavBar = () => {
               Cars
             </Button>
             <Button
-              variant="outline"
+              variant={isActivePath("/login") ? "solid" : "outline"}
               colorScheme="blue"
               onClick={() => {
                 navigate("/login");
@@ -164,7 +173,7 @@ export const NavBar = () => {
               width="100%"
               justifyContent="center"
               borderWidth="1px"
-              _hover={{ bg: "blue.50" }}
+              _hover={{ bg: isActivePath("/login") ? "blue.600" : "blue.50" }}
               size="md"
               fontSize="md"
               fontWeight="medium"
@@ -173,7 +182,7 @@ export const NavBar = () => {
               Login
             </Button>
             <Button
-              variant="solid"
+              variant={isActivePath("/signup") ? "solid" : "outline"}
               colorScheme="blue"
               onClick={() => {
                 navigate("/signup");

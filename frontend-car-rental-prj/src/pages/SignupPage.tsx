@@ -10,6 +10,32 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { httpClient } from '../services/httpClient'
 
+// variables
+const CONTAINER_LAYOUT = {
+  maxWidth: "7xl",
+  containerWidth: { base: "95%", md: "500px" },
+  padding: { container: 10, form: 12 },
+  spacing: { sections: 8, form: 6 }
+};
+
+const FORM_CONFIG = {
+  inputSize: "lg" as const,
+  buttonSize: "lg" as const,
+  borderRadius: "md" as const,
+  buttonMarginTop: 4
+};
+
+const MESSAGE_THEME = {
+  success: { bg: "green.100", border: "green.500", text: "green.700" },
+  error: { bg: "red.100", border: "red.500", text: "red.700" }
+};
+
+const SIGNUP_FLOW = {
+  redirectDelay: 2000,
+  redirectTarget: "/login",
+  successMessage: "Account created successfully! Please login with your credentials."
+};
+
 const SignupPage = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -40,16 +66,15 @@ const SignupPage = () => {
       const response = await httpClient.post('/users/signup', formData)
       
       if (response.data.message === 'User created successfully') {
-        // Don't auto-login - let user choose to login themselves
+        
         setMessage({
           type: 'success',
-          text: `Account created successfully! Please login with your credentials.`
+          text: SIGNUP_FLOW.successMessage
         })
         
-        // Redirect to login page after showing success message
         setTimeout(() => {
-          navigate('/login')
-        }, 2000)
+          navigate(SIGNUP_FLOW.redirectTarget)
+        }, SIGNUP_FLOW.redirectDelay)
       }
     } catch (error: unknown) {
       let errorMessage = 'Something went wrong'
@@ -72,24 +97,24 @@ const SignupPage = () => {
     <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
       {/* Main Content */}
     
-      <Box maxW="7xl" mx="auto" py={10} px={4} flex="1" display="flex" alignItems="center">
-        <VStack gap={8} align="center" w="100%">
+      <Box maxW={CONTAINER_LAYOUT.maxWidth} mx="auto" py={CONTAINER_LAYOUT.padding.container} px={4} flex="1" display="flex" alignItems="center">
+        <VStack gap={CONTAINER_LAYOUT.spacing.sections} align="center" w="100%">
           <Heading size="4xl" textAlign="center" color="gray.700">
             Sign up
           </Heading>
 
-          <Box w={{ base: "95%", md: "500px" }} bg="white" p={12} borderRadius="md" boxShadow="sm">
+          <Box w={CONTAINER_LAYOUT.containerWidth} bg="white" p={CONTAINER_LAYOUT.padding.form} borderRadius={FORM_CONFIG.borderRadius} boxShadow="sm">
             {message && (
               <Box
                 p={4}
                 mb={4}
-                borderRadius="md"
-                bg={message.type === 'success' ? 'green.100' : 'red.100'}
+                borderRadius={FORM_CONFIG.borderRadius}
+                bg={MESSAGE_THEME[message.type].bg}
                 borderLeft="4px solid"
-                borderColor={message.type === 'success' ? 'green.500' : 'red.500'}
+                borderColor={MESSAGE_THEME[message.type].border}
               >
                 <Text
-                  color={message.type === 'success' ? 'green.700' : 'red.700'}
+                  color={MESSAGE_THEME[message.type].text}
                   fontWeight="bold"
                 >
                   {message.text}
@@ -98,7 +123,7 @@ const SignupPage = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <VStack gap={6} align="stretch" w="100%">
+              <VStack gap={CONTAINER_LAYOUT.spacing.form} align="stretch" w="100%">
                 <Box w="100%">
                   <Text mb={2} fontWeight="semibold">Username</Text>
                   <Input
@@ -107,7 +132,7 @@ const SignupPage = () => {
                     placeholder="Username"
                     value={formData.username}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_CONFIG.inputSize}
                     w="100%"
                     required
                   />
@@ -121,7 +146,7 @@ const SignupPage = () => {
                     placeholder="Name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_CONFIG.inputSize}
                     required
                   />
                 </Box>
@@ -134,7 +159,7 @@ const SignupPage = () => {
                     placeholder="Last Name"
                     value={formData.user_last_name}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_CONFIG.inputSize}
                     required
                   />
                 </Box>
@@ -147,7 +172,7 @@ const SignupPage = () => {
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_CONFIG.inputSize}
                     required
                   />
                 </Box>
@@ -160,7 +185,7 @@ const SignupPage = () => {
                     placeholder="Password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_CONFIG.inputSize}
                     required
                   />
                 </Box>
@@ -173,7 +198,7 @@ const SignupPage = () => {
                     placeholder="Confirm Password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    size="lg"
+                    size={FORM_CONFIG.inputSize}
                     required
                   />
                 </Box>
@@ -181,10 +206,10 @@ const SignupPage = () => {
                 <Button
                   type="submit"
                   colorPalette="gray"
-                  size="lg"
+                  size={FORM_CONFIG.buttonSize}
                   w="full"
                   loading={isLoading}
-                  mt={4}
+                  mt={FORM_CONFIG.buttonMarginTop}
                 >
                   {isLoading ? 'Creating account...' : 'signup'}
                 </Button>
