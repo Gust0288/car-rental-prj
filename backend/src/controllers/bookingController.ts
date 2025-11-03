@@ -40,6 +40,24 @@ export const createBooking = async (req: Request, res: Response) => {
   }
 
   try {
+    // Check if car is available for the selected dates
+    const { rows: conflicts } = await userPool.query(
+      `SELECT COUNT(*) as conflict_count
+       FROM bookings
+       WHERE car_id = $1
+       AND status IN ('pending', 'confirmed', 'in_progress')
+       AND tstzrange(pickup_at, return_at, '[)') && tstzrange($2::timestamptz, $3::timestamptz, '[)')`,
+      [car_id, pickup_at, return_at]
+    );
+
+    const hasConflict = parseInt(conflicts[0].conflict_count) > 0;
+
+    if (hasConflict) {
+      return res.status(409).json({
+        error: "Car is not available for the selected dates",
+      });
+    }
+
     // Calculate rental days and price
     const dayMs = 24 * 60 * 60 * 1000;
     const rentalDays = Math.ceil(
@@ -48,7 +66,7 @@ export const createBooking = async (req: Request, res: Response) => {
     const dailyRate = 399; // DKK per day
     const priceTotal = rentalDays * dailyRate;
 
-    // Insert the booking
+    // Insert the booking with 'confirmed' status since car is available
     const { rows } = await userPool.query(
       `INSERT INTO bookings (
         car_id, 
@@ -68,7 +86,7 @@ export const createBooking = async (req: Request, res: Response) => {
         return_location_id,
         pickup_at,
         return_at,
-        "pending", // Default status
+        "confirmed", // Set to confirmed if car is available
         priceTotal,
       ]
     );
