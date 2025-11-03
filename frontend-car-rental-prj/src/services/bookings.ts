@@ -14,6 +14,13 @@ export type Booking = {
   updated_at: string;
 };
 
+export type UserBooking = Booking & {
+  make?: string;
+  model?: string;
+  year?: number;
+  img_path?: string;
+};
+
 export async function getBookedCarIds(): Promise<number[]> {
   try {
     // Fetch all bookings (you might want to add a dedicated endpoint for this)
@@ -65,5 +72,15 @@ export async function checkCarAvailability(
   } catch (error) {
     console.error("Failed to check availability:", error);
     return false;
+  }
+}
+
+export async function getUserBookings(userId: number): Promise<UserBooking[]> {
+  try {
+    const { data } = await httpClient.get<UserBooking[]>(`/bookings/user/${userId}`);
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch user bookings:", error);
+    throw error;
   }
 }

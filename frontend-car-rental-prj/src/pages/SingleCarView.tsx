@@ -14,7 +14,6 @@ import {
   SkeletonText,
   Input,
   Stack,
-  createToaster,
 } from "@chakra-ui/react";
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
@@ -24,12 +23,7 @@ import { Button } from "../Components/Button";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { useUser } from "../context/UserContext";
-
-// Create toaster for notifications
-const toaster = createToaster({
-  placement: "top-end",
-  duration: 3000,
-});
+import { toaster } from "../utils/toaster";
 
 const labelize = (s: string) =>
   s

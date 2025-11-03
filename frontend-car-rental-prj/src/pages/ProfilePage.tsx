@@ -11,7 +11,6 @@ import {
   IconButton,
   Stack,
   Spinner,
-  createToaster
 } from '@chakra-ui/react'
 import {
   DialogActionTrigger,
@@ -24,11 +23,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@chakra-ui/react/dialog"
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiEdit3, FiCheck, FiX, FiUser, FiMail, FiAtSign, FiLogOut, FiTrash2 } from 'react-icons/fi'
 import { useUser } from '../context/UserContext'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../services/api-client'
+import { toaster, TOAST_DURATIONS } from '../utils/toaster'
+import { RedirectingLoader } from '../Components/RedirectingLoader'
 
 // variables 
 const RESPONSIVE_SIZES = {
@@ -46,14 +47,35 @@ const COLORS = {
   cardBg: "white",
   sectionBg: "gray.50",
   borderColor: "gray.200",
-  focusBorder: "blue.400"
+  focusBorder: "blue.400",
+  darkGray: "#52525b"
 }
 
 const TOAST_MESSAGES = {
-  updateSuccess: { title: 'Profile updated', description: 'Your profile has been successfully updated.', type: 'success' as const },
-  updateError: { title: 'Update failed', description: 'Failed to update profile. Please try again.', type: 'error' as const },
-  deleteSuccess: { title: 'Account deleted', description: 'Your account has been successfully deleted.', type: 'success' as const },
-  deleteError: { title: 'Delete failed', description: 'Failed to delete account. Please try again.', type: 'error' as const }
+  updateSuccess: { 
+    title: 'Profile updated', 
+    description: 'Your profile has been successfully updated.', 
+    type: 'success' as const,
+    duration: TOAST_DURATIONS.short 
+  },
+  updateError: { 
+    title: 'Update failed', 
+    description: 'Failed to update profile. Please try again.', 
+    type: 'error' as const,
+    duration: TOAST_DURATIONS.short 
+  },
+  deleteSuccess: { 
+    title: 'Account deleted', 
+    description: 'Your account has been successfully deleted.', 
+    type: 'success' as const,
+    duration: TOAST_DURATIONS.short 
+  },
+  deleteError: { 
+    title: 'Delete failed', 
+    description: 'Failed to delete account. Please try again.', 
+    type: 'error' as const,
+    duration: TOAST_DURATIONS.short 
+  }
 }
 
 const FORM_VALIDATION = {
@@ -67,11 +89,6 @@ const FORM_VALIDATION = {
 const DIALOG_CONFIG = { maxW: "xs", mx: 4 }
 const BORDER_STYLE = "1px solid"
 const FOCUS_STYLES = { borderColor: 'blue.400', bg: 'white' }
-
-const toaster = createToaster({
-  placement: 'top-end',
-  duration: 3000,
-})
 
 interface ProfileFormData {
   username: string
@@ -95,8 +112,21 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     logout()
-    navigate('/')
+    setIsEditing(false)
+    setErrors({})
+    navigate('/login', { replace: true })
   }
+
+  useEffect(() => {
+    if (!user) {
+      const storedUser = localStorage.getItem('user')
+      const storedToken = localStorage.getItem('token')
+
+      if (!storedUser || !storedToken) {
+        navigate('/login', { replace: true })
+      }
+    }
+  }, [user, navigate])
 
   const validateForm = (): boolean => {
     const newErrors: Partial<ProfileFormData> = {}
@@ -181,8 +211,7 @@ const ProfilePage = () => {
   }
 
   if (!user) {
-    navigate('/login')
-    return null
+    return <RedirectingLoader />;
   }
 
   const getInitials = (name: string, lastName: string) => {
@@ -211,21 +240,34 @@ const ProfilePage = () => {
               <Box 
                 w={RESPONSIVE_SIZES.avatar}
                 h={RESPONSIVE_SIZES.avatar}
-                bg="whiteAlpha.300" 
+                bg="white" 
                 borderRadius="full" 
                 display="flex" 
                 alignItems="center" 
                 justifyContent="center"
                 fontSize={RESPONSIVE_SIZES.fontSize}
                 fontWeight="bold"
+                color="blue.600"
+                shadow="md"
               >
                 {getInitials(user.name, user.user_last_name)}
               </Box>
               <Box textAlign={{ base: "center", sm: "left" }}>
-                <Heading size={{ base: "lg", md: "xl" }} fontWeight="bold">
+                
+                <Heading 
+                  size={{ base: "lg", md: "xl" }} 
+                  fontWeight="bold"
+                  color={COLORS.darkGray}
+                  letterSpacing="tight"
+                >
                   {user.name} {user.user_last_name}
                 </Heading>
-                <Text fontSize={{ base: "md", md: "lg" }} opacity={0.9}>
+                <Text 
+                  fontSize={{ base: "md", md: "lg" }} 
+                  color={COLORS.darkGray}
+                  fontWeight="semibold"
+                  opacity={0.95}
+                >
                   @{user.username}
                 </Text>
               </Box>

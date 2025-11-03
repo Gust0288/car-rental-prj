@@ -67,6 +67,16 @@ export const NavBar = () => {
             Cars
           </Button>
           <Button
+            variant={isActivePath("/my-bookings") ? "solid" : "ghost"}
+            size="sm"
+            color={isActivePath("/my-bookings") ? "blue.500" : "white"}
+            bg={isActivePath("/my-bookings") ? "white" : "transparent"}
+            _hover={{ bg: isActivePath("/my-bookings") ? "gray.100" : "blue.600" }}
+            onClick={() => navigate("/my-bookings")}
+          >
+            My Bookings
+          </Button>
+          <Button
             variant={isActivePath("/login") ? "solid" : "ghost"}
             size="sm"
             color={isActivePath("/login") ? "blue.500" : "white"}
@@ -162,6 +172,24 @@ export const NavBar = () => {
               py={3}
             >
               Cars
+            </Button>
+            <Button
+              variant={isActivePath("/my-bookings") ? "solid" : "outline"}
+              colorScheme="blue"
+              onClick={() => {
+                navigate("/my-bookings");
+                handleToggle();
+              }}
+              width="100%"
+              justifyContent="center"
+              borderWidth="1px"
+              _hover={{ bg: isActivePath("/my-bookings") ? "blue.600" : "blue.50" }}
+              size="md"
+              fontSize="md"
+              fontWeight="medium"
+              py={3}
+            >
+              My Bookings
             </Button>
             <Button
               variant={isActivePath("/login") ? "solid" : "outline"}

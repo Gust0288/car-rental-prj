@@ -32,7 +32,6 @@ export const authService = {
 export const carService = {
   getAllCars: () => httpClient.get('/cars'),
   getCarById: (carId: number) => httpClient.get(`/cars/${carId}`),
-  // Add more car-related endpoints as needed
 }
 
 // Health check

@@ -251,7 +251,7 @@ const BookingConfirmation = () => {
         <Button onClick={() => navigate("/cars")} variant="outline" size="lg">
           Browse More Cars
         </Button>
-        <Button onClick={() => navigate("/profile")} variant="primary" size="lg">
+        <Button onClick={() => navigate("/my-bookings")} variant="primary" size="lg">
           View My Bookings
         </Button>
       </HStack>
