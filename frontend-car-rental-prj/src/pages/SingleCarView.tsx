@@ -17,10 +17,9 @@ import {
   createToaster,
 } from "@chakra-ui/react";
 import { Field as ChakraField } from "@chakra-ui/react/field";
-import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { Separator } from "@chakra-ui/react/separator";
 import { FiArrowLeft } from "react-icons/fi";
-import { Button } from "../Components/Button";
+import { Button } from "../components/Button";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { useUser } from "../context/UserContext";
@@ -104,8 +103,6 @@ const SingleCarView = () => {
   const [loading, setLoading] = useState(true);
 
   // Prefill booking state from URL if present
-  const [pickupLocation, setPickupLocation] = useState(sp.get("pickupLocation") ?? "");
-  const [returnLocation, setReturnLocation] = useState(sp.get("returnLocation") ?? "");
   const [pickupAt, setPickupAt] = useState(
     sp.get("pickupDate")
       ? `${sp.get("pickupDate")}T10:00`
@@ -179,8 +176,6 @@ const SingleCarView = () => {
   const price = rentalDays * dailyRate;
 
   const errors = {
-    pickupLocation: pickupLocation ? "" : "Choose pick up location",
-    returnLocation: returnLocation ? "" : "Choose return location",
     pickupAt: start.getTime() > Date.now() - 60 * 1000 ? "" : "Pick up must be in the future",
     returnAt: end > start ? "" : "Return must be after pick up",
   };
@@ -207,8 +202,8 @@ const SingleCarView = () => {
         body: JSON.stringify({
           car_id: car.id,
           user_id: user.id,
-          pickup_location_id: pickupLocation, // adjust to numeric ids if needed
-          return_location_id: returnLocation,
+          pickup_location_id: car.car_location, // use car's fixed location
+          return_location_id: car.car_location, // same location for return
           pickup_at: new Date(pickupAt).toISOString(),
           return_at: new Date(returnAt).toISOString(),
         }),
@@ -362,37 +357,17 @@ const SingleCarView = () => {
           </Text>
 
           <Stack gap={4}>
-            <ChakraField.Root invalid={!!errors.pickupLocation}>
-              <ChakraField.Label>Pick up location</ChakraField.Label>
-              <NativeSelectRoot>
-                <NativeSelectField
-                  placeholder="Select location"
-                  value={pickupLocation}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
-                >
-                  {/* Replace with your real locations */}
-                  <option value="cph">Copenhagen</option>
-                  <option value="aar">Aarhus</option>
-                  <option value="odn">Odense</option>
-                </NativeSelectField>
-              </NativeSelectRoot>
-              {errors.pickupLocation && <ChakraField.ErrorText>{errors.pickupLocation}</ChakraField.ErrorText>}
-            </ChakraField.Root>
-
-            <ChakraField.Root invalid={!!errors.returnLocation}>
-              <ChakraField.Label>Return location</ChakraField.Label>
-              <NativeSelectRoot>
-                <NativeSelectField
-                  placeholder="Select location"
-                  value={returnLocation}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReturnLocation(e.target.value)}
-                >
-                  <option value="cph">Copenhagen</option>
-                  <option value="aar">Aarhus</option>
-                  <option value="odn">Odense</option>
-                </NativeSelectField>
-              </NativeSelectRoot>
-              {errors.returnLocation && <ChakraField.ErrorText>{errors.returnLocation}</ChakraField.ErrorText>}
+            <ChakraField.Root>
+              <ChakraField.Label>Car Location</ChakraField.Label>
+              <Input
+                value={car?.car_location || "Location not available"}
+                readOnly
+                bg="gray.100"
+                cursor="not-allowed"
+              />
+              <ChakraField.HelperText>
+                This car is only available at this location
+              </ChakraField.HelperText>
             </ChakraField.Root>
 
             <ChakraField.Root invalid={!!errors.pickupAt}>

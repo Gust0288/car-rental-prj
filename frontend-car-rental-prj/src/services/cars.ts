@@ -15,6 +15,7 @@ export type Car = {
   city_mpg?: number;
   highway_mpg?: number;
   combination_mpg?: number;
+  car_location?: string;
 };
 
 export async function getCars(): Promise<Car[]> {

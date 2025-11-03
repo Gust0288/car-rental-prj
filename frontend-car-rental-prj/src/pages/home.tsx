@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Heading,
@@ -14,22 +14,39 @@ import {
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../Components/Button";
+import { Button } from "../components/Button";
+import { getCars, type Car } from "../services/cars";
 
 export default function Home() {
   const navigate = useNavigate();
   const [pickupLocation, setPickupLocation] = useState("");
-  const [returnLocation, setReturnLocation] = useState("");
   const [pickupAt, setPickupAt] = useState(
     new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
   const [returnAt, setReturnAt] = useState(
     new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
+  const [locations, setLocations] = useState<string[]>([]);
+
+  // Fetch cars and extract unique locations
+  useEffect(() => {
+    getCars().then((cars: Car[]) => {
+      const uniqueLocations = [...new Set(cars.map(car => car.car_location).filter(Boolean))].sort();
+      setLocations(uniqueLocations as string[]);
+    }).catch(err => {
+      console.error("Failed to fetch locations:", err);
+    });
+  }, []);
+
+  // Capitalize first letter of each word
+  const capitalizeString = (str: string) => {
+    return str.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  };
 
   const errors = {
-    pickupLocation: pickupLocation ? "" : "Choose pick up location",
-    returnLocation: returnLocation ? "" : "Choose return location",
+    pickupLocation: pickupLocation ? "" : "Choose car location",
     pickupAt: new Date(pickupAt).getTime() > Date.now() - 60 * 1000 ? "" : "Pick up must be in the future",
     returnAt: new Date(returnAt) > new Date(pickupAt) ? "" : "Return must be after pick up",
   };
@@ -43,7 +60,6 @@ export default function Home() {
     // Navigate to cars page with search params
     const params = new URLSearchParams({
       pickupLocation,
-      returnLocation,
       pickupAt,
       returnAt,
     });
@@ -84,35 +100,21 @@ export default function Home() {
             <Box w="100%" bg="white" p={8} borderRadius="lg" shadow="md">
               <Stack gap={4}>
                 <ChakraField.Root invalid={!!errors.pickupLocation}>
-                  <ChakraField.Label>Pick up location</ChakraField.Label>
+                  <ChakraField.Label>Location</ChakraField.Label>
                   <NativeSelectRoot>
                     <NativeSelectField
-                      placeholder="Select location"
                       value={pickupLocation}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
                     >
-                      <option value="cph">Copenhagen</option>
-                      <option value="aar">Aarhus</option>
-                      <option value="odn">Odense</option>
+                      <option value="">Select location</option>
+                      {locations.map(location => (
+                        <option key={location} value={location}>
+                          {capitalizeString(location)}
+                        </option>
+                      ))}
                     </NativeSelectField>
                   </NativeSelectRoot>
                   {errors.pickupLocation && <ChakraField.ErrorText>{errors.pickupLocation}</ChakraField.ErrorText>}
-                </ChakraField.Root>
-
-                <ChakraField.Root invalid={!!errors.returnLocation}>
-                  <ChakraField.Label>Return location</ChakraField.Label>
-                  <NativeSelectRoot>
-                    <NativeSelectField
-                      placeholder="Select location"
-                      value={returnLocation}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReturnLocation(e.target.value)}
-                    >
-                      <option value="cph">Copenhagen</option>
-                      <option value="aar">Aarhus</option>
-                      <option value="odn">Odense</option>
-                    </NativeSelectField>
-                  </NativeSelectRoot>
-                  {errors.returnLocation && <ChakraField.ErrorText>{errors.returnLocation}</ChakraField.ErrorText>}
                 </ChakraField.Root>
 
                 <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
