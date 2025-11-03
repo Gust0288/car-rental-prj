@@ -104,7 +104,7 @@ const AdminPage: React.FC = () => {
 
   return (
     <Container maxW="6xl" py={8}>
-      <VStack spacing={6} align="stretch">
+      <VStack gap={4.5} align="stretch">
         <Box>
           <Heading size="lg">Admin Dashboard</Heading>
           <Text color="gray.600" mt={1}>
@@ -113,7 +113,7 @@ const AdminPage: React.FC = () => {
         </Box>
 
         <Box bg="white" p={4} borderRadius="md" shadow="sm">
-          <HStack spacing={4} mb={4}>
+          <HStack gap={4} mb={4}>
             <Button
               onClick={() => {
                 setActiveTab("users");
@@ -177,7 +177,7 @@ const AdminPage: React.FC = () => {
                   <Spinner />
                 </Flex>
               ) : (
-                <VStack align="stretch" spacing={2}>
+                <VStack align="stretch" gap={2}>
                   {users
                     ?.filter((u) => (showDeleted ? true : !u.user_deleted_at))
                     .map((u) => (
@@ -244,7 +244,7 @@ const AdminPage: React.FC = () => {
                   <Spinner />
                 </Flex>
               ) : (
-                <VStack align="stretch" spacing={2}>
+                <VStack align="stretch" gap={2}>
                   {bookings?.map((b) => (
                     <HStack
                       key={b.id}
