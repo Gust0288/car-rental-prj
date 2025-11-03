@@ -3,17 +3,12 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { authService } from "../services/api-client";
 import { useUser } from "../context/UserContext";
+import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 
 
 const RESPONSIVE_WIDTHS = {
   container: { base: "95%", md: "500px" },
   maxWidth: "md"
-};
-
-const MESSAGE_STYLES = {
-  backgrounds: { success: "green.100", error: "red.100", info: "blue.100" },
-  borderColors: { success: "green.500", error: "red.500", info: "blue.500" },
-  textColors: { success: "green.700", error: "red.700", info: "blue.700" }
 };
 
 const FORM_STYLING = {
@@ -41,10 +36,6 @@ const LoginPage = () => {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error" | "info";
-    text: string;
-  } | null>(null);
   const { login } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -60,7 +51,6 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage(null);
 
     try {
       const response = await authService.login(formData);
@@ -71,9 +61,12 @@ const LoginPage = () => {
           token: response.data.token
         });
 
-        setMessage({
+         
+        toaster.create({
+          title: "Login successful",
+          description: `Welcome back, ${response.data.user.name}!`,
           type: "success",
-          text: `Welcome back, ${response.data.user.name}!`,
+          duration: TOAST_DURATIONS.short  
         });
 
         // Get redirect URL from query params or default to profile
@@ -94,9 +87,12 @@ const LoginPage = () => {
           axiosError.response?.data?.message || "Something went wrong";
       }
 
-      setMessage({
+      
+      toaster.create({
+        title: "Login failed",
+        description: errorMessage,
         type: "error",
-        text: errorMessage,
+        duration: TOAST_DURATIONS.short
       });
     } finally {
       setIsLoading(false);
@@ -112,24 +108,6 @@ const LoginPage = () => {
           </Heading>
 
           <Box w={RESPONSIVE_WIDTHS.container} bg="white" p={FORM_STYLING.containerPadding} borderRadius={FORM_STYLING.borderRadius} boxShadow="sm">
-            {message && (
-              <Box
-                p={4}
-                mb={4}
-                borderRadius={FORM_STYLING.borderRadius}
-                bg={MESSAGE_STYLES.backgrounds[message.type]}
-                borderLeft="4px solid"
-                borderColor={MESSAGE_STYLES.borderColors[message.type]}
-              >
-                <Text
-                  color={MESSAGE_STYLES.textColors[message.type]}
-                  fontWeight="bold"
-                >
-                  {message.text}
-                </Text>
-              </Box>
-            )}
-
             <form onSubmit={handleSubmit}>
               <VStack gap={LAYOUT_SPACING.formGap} align="stretch">
                 <Box>
