@@ -118,6 +118,9 @@ const BookingConfirmation = () => {
       (24 * 60 * 60 * 1000)
   );
 
+  // Ensure price_total is handled safely even if backend returns it as a string
+  const totalAmount = Number(booking.price_total);
+
   return (
     <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
       {/* Success Header */}
@@ -226,7 +229,7 @@ const BookingConfirmation = () => {
                   Total
                 </Text>
                 <Text fontSize="xl" fontWeight="bold" color="blue.600">
-                  {booking.price_total ? booking.price_total.toFixed(2) : "--"} DKK
+                  {Number.isFinite(totalAmount) ? `${totalAmount.toFixed(2)}` : "--"} DKK
                 </Text>
               </HStack>
             </VStack>
