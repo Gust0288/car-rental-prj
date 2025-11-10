@@ -192,17 +192,13 @@ const MyBookingsPage = () => {
                         <FiCalendar />
                         <Text>Pickup</Text>
                       </HStack>
-                      <Text color="gray.700" mt={1}>
-                        {formatDate(booking.pickup_at)}
-                      </Text>
-                      {booking.pickup_location_id && (
+                        <Text color="gray.700" mt={1}>
+                          {formatDate(booking.pickup_at)}
+                        </Text>
                         <HStack color="gray.600" fontSize="sm" mt={1}>
                           <FiMapPin />
-                          <Text>
-                            {locationNames[booking.pickup_location_id] ?? booking.pickup_location_id}
-                          </Text>
+                          <Text>{locationNames[booking.car_location ?? ""] ?? booking.car_location ?? "N/A"}</Text>
                         </HStack>
-                      )}
                     </Box>
 
                     <Separator />
@@ -215,20 +211,19 @@ const MyBookingsPage = () => {
                       <Text color="gray.700" mt={1}>
                         {formatDate(booking.return_at)}
                       </Text>
-                      {booking.return_location_id && (
-                        <HStack color="gray.600" fontSize="sm" mt={1}>
-                          <FiMapPin />
-                          <Text>
-                            {locationNames[booking.return_location_id] ?? booking.return_location_id}
-                          </Text>
-                        </HStack>
-                      )}
+                      <HStack color="gray.600" fontSize="sm" mt={1}>
+                        <FiMapPin />
+                        <Text>{locationNames[booking.car_location ?? ""] ?? booking.car_location ?? "N/A"}</Text>
+                      </HStack>
                     </Box>
                   </VStack>
 
                   <HStack justify="space-between" pt={2}>
                     <Text fontWeight="bold" color="gray.800">
-                      Total: {booking.price_total ? `${Number(booking.price_total).toFixed(2)} DKK` : "--"}
+                      Total: {(() => {
+                        const amt = Number(booking.price_total);
+                        return Number.isFinite(amt) ? `${amt.toFixed(2)} DKK` : "--";
+                      })()}
                     </Text>
                     <Button
                       variant="primary"

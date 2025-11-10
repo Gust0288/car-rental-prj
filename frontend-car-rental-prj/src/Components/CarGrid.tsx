@@ -1,5 +1,5 @@
 import { SimpleGrid, Text } from "@chakra-ui/react";
-import { CarCard } from "../Components/CarCard";
+import { CarCard } from "../components/CarCard";
 
 interface Car {
   id: number;
@@ -10,24 +10,16 @@ interface Car {
 
 interface CarGridProps {
   cars: Car[];
-  onCarClick?: (car: Car) => void;
 }
 
-export const CarGrid = ({ cars, onCarClick }: CarGridProps) => {
+export const CarGrid = ({ cars }: CarGridProps) => {
   if (!cars || !Array.isArray(cars)) {
     return <Text>...Loading</Text>;
   }
   return (
     <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={6} w="100%">
       {cars.map((car) => (
-        <CarCard
-          key={car.id}
-          id={car.id}
-          make={car.make}
-          model={car.model}
-          imageUrl={car.img_path}
-          onClick={onCarClick ? () => onCarClick(car) : undefined}
-        />
+        <CarCard key={car.id} id={car.id} make={car.make} model={car.model} imageUrl={car.img_path} />
       ))}
     </SimpleGrid>
   );

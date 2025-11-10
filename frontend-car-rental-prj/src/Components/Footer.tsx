@@ -6,7 +6,7 @@ import {
   Link,
   VStack,
   HStack,
-  IconButton,
+  Button,
 } from "@chakra-ui/react";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
@@ -15,11 +15,11 @@ export const Footer = () => {
     <Box bg="gray.50" color="gray.700" mt="5">
       <Box height="1px" bg="gray.200" width="100%" />
       <Container maxW="7xl" py={10}>
-        <Stack spacing={8}>
+        <Stack gap={8}>
           {/* Main Footer Content */}
-          <Stack direction={{ base: "column", md: "row" }} spacing={8} justify="space-between">
+          <Stack direction={{ base: "column", md: "row" }} gap={8} justify="space-between">
             {/* Company Info */}
-            <VStack align="start" maxW="300px">
+            <VStack align="start" maxW="300px" gap={3}>
               <Text fontSize="xl" fontWeight="bold" color="blue.500">
                 Car Rental
               </Text>
@@ -27,48 +27,28 @@ export const Footer = () => {
                 Your trusted partner for reliable and affordable car rentals. 
                 Explore the world with our premium fleet of vehicles.
               </Text>
-              <HStack spacing={3}>
-                <IconButton
-                  aria-label="Facebook"
-                  icon={<FaFacebook />}
-                  size="sm"
-                  variant="ghost"
-                  color="blue.500"
-                  _hover={{ bg: "blue.50" }}
-                />
-                <IconButton
-                  aria-label="Twitter"
-                  icon={<FaTwitter />}
-                  size="sm"
-                  variant="ghost"
-                  color="blue.500"
-                  _hover={{ bg: "blue.50" }}
-                />
-                <IconButton
-                  aria-label="Instagram"
-                  icon={<FaInstagram />}
-                  size="sm"
-                  variant="ghost"
-                  color="blue.500"
-                  _hover={{ bg: "blue.50" }}
-                />
-                <IconButton
-                  aria-label="LinkedIn"
-                  icon={<FaLinkedin />}
-                  size="sm"
-                  variant="ghost"
-                  color="blue.500"
-                  _hover={{ bg: "blue.50" }}
-                />
+              <HStack gap={3}>
+                <Button aria-label="Facebook" size="sm" variant="ghost" color="blue.500" _hover={{ bg: "blue.50" }}>
+                  <FaFacebook />
+                </Button>
+                <Button aria-label="Twitter" size="sm" variant="ghost" color="blue.500" _hover={{ bg: "blue.50" }}>
+                  <FaTwitter />
+                </Button>
+                <Button aria-label="Instagram" size="sm" variant="ghost" color="blue.500" _hover={{ bg: "blue.50" }}>
+                  <FaInstagram />
+                </Button>
+                <Button aria-label="LinkedIn" size="sm" variant="ghost" color="blue.500" _hover={{ bg: "blue.50" }}>
+                  <FaLinkedin />
+                </Button>
               </HStack>
             </VStack>
 
             {/* Quick Links */}
-            <VStack align="start" spacing={3}>
+            <VStack align="start" gap={3}>
               <Text fontWeight="bold" fontSize="md">
                 Quick Links
               </Text>
-              <Stack spacing={2}>
+              <Stack gap={2}>
                 <Link href="#" color="blue.500" _hover={{ textDecoration: "underline" }}>
                   Home
                 </Link>
@@ -88,11 +68,11 @@ export const Footer = () => {
             </VStack>
 
             {/* Services */}
-            <VStack align="start" spacing={3}>
+            <VStack align="start" gap={3}>
               <Text fontWeight="bold" fontSize="md">
                 Services
               </Text>
-              <Stack spacing={2}>
+              <Stack gap={2}>
                 <Link href="#" color="blue.500" _hover={{ textDecoration: "underline" }}>
                   Car Rental
                 </Link>
@@ -112,20 +92,20 @@ export const Footer = () => {
             </VStack>
 
             {/* Contact Info */}
-            <VStack align="start" spacing={3}>
+            <VStack align="start" gap={3}>
               <Text fontWeight="bold" fontSize="md">
                 Contact Us
               </Text>
-              <Stack spacing={2}>
-                <HStack spacing={3}>
+              <Stack gap={2}>
+                <HStack gap={3}>
                   <FaPhone size={14} />
                   <Text fontSize="sm">+45 12 34 56 78</Text>
                 </HStack>
-                <HStack spacing={3}>
+                <HStack gap={3}>
                   <FaEnvelope size={14} />
                   <Text fontSize="sm">info@carrental.dk</Text>
                 </HStack>
-                <HStack spacing={3} align="start">
+                <HStack gap={3} align="start">
                   <FaMapMarkerAlt size={14} style={{ margin: 2 }} />
                   <Text fontSize="sm">
                     123 Copenhagen Street<br />
@@ -139,16 +119,11 @@ export const Footer = () => {
           <Box height="1px" bg="gray.200" width="100%" marginY={4} />
 
           {/* Bottom Section */}
-          <Stack
-            direction={{ base: "column", md: "row" }}
-            spacing={4}
-            justify="space-between"
-            align="center"
-          >
+          <Stack direction={{ base: "column", md: "row" }} gap={4} justify="space-between" align="center">
             <Text fontSize="sm">
               © 2025 Car Rental. All rights reserved.
             </Text>
-            <HStack spacing={6}>
+            <HStack gap={6}>
               <Link href="#" fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
                 Privacy Policy
               </Link>
