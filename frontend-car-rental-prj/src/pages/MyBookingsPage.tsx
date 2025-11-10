@@ -18,6 +18,7 @@ import { useUser } from "../context/UserContext";
 import { Button } from "../components/Button";
 import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader";
 import { getUserBookings, type UserBooking } from "../services/bookings";
+import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 
 const locationNames: Record<string, string> = {
   cph: "Copenhagen",
@@ -55,12 +56,6 @@ const MyBookingsPage = () => {
 
   useEffect(() => {
     if (!user) {
-      const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("token");
-
-      if (!storedUser || !storedToken) {
-        navigate("/login", { replace: true, state: { from: "/my-bookings" } });
-      }
       return;
     }
 
@@ -72,14 +67,21 @@ const MyBookingsPage = () => {
         setBookings(data);
       } catch (err) {
         console.error(err);
-        setError("Failed to load bookings. Please try again.");
+        const errorMessage = "Failed to load bookings. Please try again.";
+        setError(errorMessage);
+        toaster.create({
+          title: "Error",
+          description: errorMessage,
+          type: "error",
+          duration: TOAST_DURATIONS.medium,
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchBookings();
-  }, [navigate, user]);
+  }, [user]);
 
   const hasBookings = useMemo(() => bookings.length > 0, [bookings]);
 
