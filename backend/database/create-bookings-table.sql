@@ -5,8 +5,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   id                  BIGSERIAL PRIMARY KEY,
   car_id              BIGINT NOT NULL, -- References cars(id) in car_rental_db (cross-database reference)
   user_id             BIGINT NOT NULL, -- from users service
-  pickup_location_id  TEXT,            -- use BIGINT if you have locations table
-  return_location_id  TEXT,
   pickup_at           TIMESTAMPTZ NOT NULL, -- store UTC
   return_at           TIMESTAMPTZ NOT NULL,
   status              TEXT NOT NULL CHECK (status IN ('pending','confirmed','in_progress','returned','canceled')),
