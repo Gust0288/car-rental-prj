@@ -273,16 +273,14 @@ const ProfilePage = () => {
               </Box>
             </HStack>
             
-            <Box 
-              bg="green.500" 
-              px={{ base: 3, md: 4 }}
-              py={2}
-              borderRadius="full" 
+            <Button
+              onClick={() => navigate('/my-bookings')}
+              colorScheme="blue"
+              size={{ base: "sm", md: "md" }}
               fontWeight="semibold"
-              fontSize={{ base: "sm", md: "md" }}
             >
-              Active Member
-            </Box>
+              My Bookings
+            </Button>
             
           </Flex>
         </Box>
