@@ -18,7 +18,7 @@ import { Checkbox } from "@chakra-ui/react/checkbox";
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
-import { CarGrid } from "../components/CarGrid";
+import { CarGrid } from "../Components/CarGrid";
 import { getBookedCarIds } from "../services/bookings";
 
 export default function CarsPage() {
