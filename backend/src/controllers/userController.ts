@@ -33,7 +33,7 @@ export const signupUser = async (req: Request, res: Response) => {
     const { rows } = await userPool.query(
       `INSERT INTO public.users (username, name, user_last_name, email, password, user_created_at) 
        VALUES ($1, $2, $3, $4, $5, NOW()) 
-       RETURNING id, username, name, user_last_name, email, user_created_at`,
+       RETURNING id, username, name, user_last_name, email, user_created_at, admin`,
       [username, name, user_last_name, email, hashedPassword]
     );
 
@@ -62,6 +62,7 @@ export const signupUser = async (req: Request, res: Response) => {
         name: newUser.name,
         user_last_name: newUser.user_last_name,
         email: newUser.email,
+        admin: newUser.admin ?? 0,
         user_created_at: newUser.user_created_at,
       },
       token,
@@ -82,7 +83,7 @@ export const loginUser = async (req: Request, res: Response) => {
     logger.info("User login attempt", { email });
 
     const { rows } = await userPool.query(
-      `SELECT id, username, name, user_last_name, email, password, user_created_at 
+      `SELECT id, username, name, user_last_name, email, password, admin, user_created_at 
        FROM public.users 
        WHERE email = $1 AND user_deleted_at IS NULL`,
       [email]
@@ -130,6 +131,7 @@ export const loginUser = async (req: Request, res: Response) => {
         name: user.name,
         user_last_name: user.user_last_name,
         email: user.email,
+        admin: user.admin ?? 0,
         user_created_at: user.user_created_at,
       },
       token,
@@ -166,7 +168,7 @@ export const getUserProfile = async (
     }
 
     const { rows } = await userPool.query(
-      `SELECT id, username, name, user_last_name, email, user_created_at, user_updated_at 
+      `SELECT id, username, name, user_last_name, email, admin, user_created_at, user_updated_at 
        FROM public.users 
        WHERE id = $1 AND user_deleted_at IS NULL`,
       [userId]
@@ -214,7 +216,7 @@ export const updateUserProfile = async (
       `UPDATE public.users 
        SET username = $2, name = $3, user_last_name = $4, email = $5, user_updated_at = NOW() 
        WHERE id = $1 AND user_deleted_at IS NULL 
-       RETURNING id, username, name, user_last_name, email, user_updated_at`,
+       RETURNING id, username, name, user_last_name, email, admin, user_updated_at`,
       [userId, username, name, user_last_name, email]
     );
 
