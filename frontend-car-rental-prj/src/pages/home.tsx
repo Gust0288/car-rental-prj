@@ -57,7 +57,7 @@ export default function Home() {
       return;
     }
     
-    // Navigate to cars page with search params
+   
     const params = new URLSearchParams({
       pickupLocation,
       pickupAt,

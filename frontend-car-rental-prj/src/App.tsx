@@ -42,6 +42,7 @@ export default function App() {
           </Box>
           <Footer />
         </Box>
+       
         <Toaster toaster={toaster}>
           {(toast) => (
             <Box
