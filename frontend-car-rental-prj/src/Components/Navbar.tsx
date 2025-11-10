@@ -17,37 +17,11 @@ export const NavBar = () => {
     return location.pathname === path;
   };
 
-  const isAdmin = (() => {
-    const a = user?.admin;
-    if (a === undefined || a === null) return false;
-    if (typeof a === "number") return a === 1;
-    if (typeof a === "boolean") return a === true;
-    const s = String(a).toLowerCase();
-    return s === "1" || s === "true" || s === "t" || s === "yes";
-  })();
 
-  // Fallback: if user isn't in context yet but is in localStorage, inspect that too
-  const adminFromStorage = (() => {
-    try {
-      const su = localStorage.getItem("user");
-      if (!su) return false;
-      const parsed = JSON.parse(su);
-      const a = parsed?.admin;
-      if (a === undefined || a === null) return false;
-      if (typeof a === "number") return a === 1;
-      if (typeof a === "boolean") return a === true;
-      const s = String(a).toLowerCase();
-      return s === "1" || s === "true" || s === "t" || s === "yes";
-    } catch {
-      return false;
-    }
-  })();
+  const isAdmin = user?.admin === 1;
+  const effectiveIsAdmin = isAdmin;
 
-  const effectiveIsAdmin = isAdmin || adminFromStorage;
 
-  // Debug logging to help diagnose missing Admin button for logged-in admins
-  // This will print in dev tools; remove in production if noisy
-  // debug logging removed
 
   return (
     <Box
