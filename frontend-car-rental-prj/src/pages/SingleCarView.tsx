@@ -14,9 +14,6 @@ import {
   SkeletonText,
   Input,
   Stack,
-<<<<<<< HEAD
-=======
-  createToaster,
   DialogRoot,
   DialogContent,
   DialogHeader,
@@ -25,7 +22,7 @@ import {
   DialogTitle,
   DialogBackdrop,
   DialogCloseTrigger,
->>>>>>> pending_bookings_remove
+
 } from "@chakra-ui/react";
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { Separator } from "@chakra-ui/react/separator";
