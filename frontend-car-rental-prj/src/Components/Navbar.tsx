@@ -1,17 +1,18 @@
 import { Box, HStack, VStack, Text, Button, Input } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 export const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useUser();
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
 
-  
   const isActivePath = (path: string) => {
     return location.pathname === path;
   };
@@ -96,6 +97,18 @@ export const NavBar = () => {
           >
             Sign Up
           </Button>
+          {user?.admin === 1 && (
+            <Button
+              variant={isActivePath("/admin") ? "solid" : "ghost"}
+              size="sm"
+              color={isActivePath("/admin") ? "blue.500" : "white"}
+              bg={isActivePath("/admin") ? "white" : "transparent"}
+              _hover={{ bg: isActivePath("/admin") ? "gray.100" : "blue.600" }}
+              onClick={() => navigate("/admin")}
+            >
+              Admin
+            </Button>
+          )}
         </HStack>
       </HStack>
 
