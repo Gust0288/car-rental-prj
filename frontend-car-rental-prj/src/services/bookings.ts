@@ -4,8 +4,6 @@ export type Booking = {
   id: number;
   car_id: number;
   user_id: number;
-  pickup_location_id?: string;
-  return_location_id?: string;
   pickup_at: string;
   return_at: string;
   status: 'pending' | 'confirmed' | 'in_progress' | 'returned' | 'canceled';
@@ -19,6 +17,7 @@ export type UserBooking = Booking & {
   model?: string;
   year?: number;
   img_path?: string;
+  car_location?: string;
 };
 
 export async function getBookedCarIds(): Promise<number[]> {

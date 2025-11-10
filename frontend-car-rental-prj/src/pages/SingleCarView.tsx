@@ -215,8 +215,6 @@ const SingleCarView = () => {
         body: JSON.stringify({
           car_id: car.id,
           user_id: user.id,
-          pickup_location_id: car.car_location, // use car's fixed location
-          return_location_id: car.car_location, // same location for return
           pickup_at: new Date(pickupAt).toISOString(),
           return_at: new Date(returnAt).toISOString(),
         }),
@@ -355,7 +353,6 @@ const SingleCarView = () => {
                     : "N/A"
                 }
               />
-              <SpecItem label="ID" value={safeText(car.id)} />
             </Grid>
           </Box>
         </VStack>

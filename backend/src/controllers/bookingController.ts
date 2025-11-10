@@ -6,8 +6,6 @@ export const createBooking = async (req: Request, res: Response) => {
   const {
     car_id,
     user_id,
-    pickup_location_id,
-    return_location_id,
     pickup_at,
     return_at,
   } = req.body;
@@ -71,19 +69,15 @@ export const createBooking = async (req: Request, res: Response) => {
       `INSERT INTO bookings (
         car_id, 
         user_id, 
-        pickup_location_id, 
-        return_location_id, 
         pickup_at, 
         return_at, 
         status, 
         price_total
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ) VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *`,
       [
         car_id,
         user_id,
-        pickup_location_id,
-        return_location_id,
         pickup_at,
         return_at,
         "confirmed", // Set to confirmed if car is available
@@ -125,8 +119,6 @@ export const getUserBookings = async (req: Request, res: Response) => {
         id,
         car_id,
         user_id,
-        pickup_location_id,
-        return_location_id,
         pickup_at,
         return_at,
         status,
@@ -147,7 +139,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
     // Get car details from cars database
     const carIds = bookings.map(b => b.car_id);
     const { rows: cars } = await pool.query(
-      `SELECT id, make, model, year, img_path
+      `SELECT id, make, model, year, img_path, car_location
        FROM cars
        WHERE id = ANY($1)`,
       [carIds]
@@ -165,6 +157,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
         model: car.model,
         year: car.year,
         img_path: car.img_path,
+        car_location: car.car_location,
       };
     });
 
@@ -186,8 +179,6 @@ export const getBookingById = async (req: Request, res: Response) => {
         id,
         car_id,
         user_id,
-        pickup_location_id,
-        return_location_id,
         pickup_at,
         return_at,
         status,
@@ -207,7 +198,7 @@ export const getBookingById = async (req: Request, res: Response) => {
 
     // Get car details from cars database
     const { rows: cars } = await pool.query(
-      `SELECT make, model, year, class, fuel_type, img_path
+      `SELECT make, model, year, class, fuel_type, img_path, car_location
        FROM cars
        WHERE id = $1`,
       [booking.car_id]
@@ -224,6 +215,7 @@ export const getBookingById = async (req: Request, res: Response) => {
       class: car.class,
       fuel_type: car.fuel_type,
       img_path: car.img_path,
+      car_location: car.car_location,
     };
 
     res.json(bookingWithCarDetails);
@@ -338,8 +330,6 @@ export const getAllBookings = async (req: Request, res: Response) => {
         id,
         car_id,
         user_id,
-        pickup_location_id,
-        return_location_id,
         pickup_at,
         return_at,
         status,
