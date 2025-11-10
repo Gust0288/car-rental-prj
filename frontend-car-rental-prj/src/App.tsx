@@ -6,8 +6,8 @@ import {
 } from "react-router-dom";
 import { Box } from "@chakra-ui/react";
 import { ToastProvider } from "./context/ToastContext";
-import { NavBar } from "./Components/Navbar";
-import { Footer } from "./Components/Footer";
+import { NavBar } from "./components/Navbar";
+import { Footer } from "./components/Footer";
 import Home from "./pages/home";
 import CarsPage from "./pages/CarsPage";
 import LoginPage from "./pages/LoginPage";
