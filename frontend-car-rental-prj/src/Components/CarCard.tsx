@@ -6,6 +6,7 @@ interface CarCardProps {
   make: string;
   model: string;
   imageUrl?: string;
+  onClick?: () => void;
 }
 
 const capitalizeString = (str: string) => {

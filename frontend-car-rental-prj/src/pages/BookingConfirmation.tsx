@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { Separator } from "@chakra-ui/react/separator";
 import { FiCheckCircle, FiCalendar, FiMapPin, FiCreditCard } from "react-icons/fi";
-import { Button } from "../components/Button";
+import { Button } from "../Components/Button";
 
 interface Booking {
   id: number;
