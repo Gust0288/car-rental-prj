@@ -14,12 +14,23 @@ import {
   SkeletonText,
   Input,
   Stack,
+<<<<<<< HEAD
+=======
+  createToaster,
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogBackdrop,
+  DialogCloseTrigger,
+>>>>>>> pending_bookings_remove
 } from "@chakra-ui/react";
 import { Field as ChakraField } from "@chakra-ui/react/field";
-import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
 import { Separator } from "@chakra-ui/react/separator";
 import { FiArrowLeft } from "react-icons/fi";
-import { Button } from "../Components/Button";
+import { Button } from "../components/Button";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { useUser } from "../context/UserContext";
@@ -98,8 +109,6 @@ const SingleCarView = () => {
   const [loading, setLoading] = useState(true);
 
   // Prefill booking state from URL if present
-  const [pickupLocation, setPickupLocation] = useState(sp.get("pickupLocation") ?? "");
-  const [returnLocation, setReturnLocation] = useState(sp.get("returnLocation") ?? "");
   const [pickupAt, setPickupAt] = useState(
     sp.get("pickupDate")
       ? `${sp.get("pickupDate")}T10:00`
@@ -111,6 +120,7 @@ const SingleCarView = () => {
       : new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
   const [submitting, setSubmitting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -173,14 +183,12 @@ const SingleCarView = () => {
   const price = rentalDays * dailyRate;
 
   const errors = {
-    pickupLocation: pickupLocation ? "" : "Choose pick up location",
-    returnLocation: returnLocation ? "" : "Choose return location",
     pickupAt: start.getTime() > Date.now() - 60 * 1000 ? "" : "Pick up must be in the future",
     returnAt: end > start ? "" : "Return must be after pick up",
   };
   const hasErrors = Object.values(errors).some(Boolean);
 
-  async function handleBook() {
+  function handleBookClick() {
     if (hasErrors || !car) {
       toaster.create({ title: "Please fix the form", type: "error" });
       return;
@@ -193,7 +201,16 @@ const SingleCarView = () => {
       return;
     }
 
+    // Show confirmation dialog
+    setShowConfirmDialog(true);
+  }
+
+  async function confirmBooking() {
+    if (!car || !user) return;
+
     setSubmitting(true);
+    setShowConfirmDialog(false);
+    
     try {
       const res = await fetch("/api/bookings", {
         method: "POST",
@@ -201,8 +218,8 @@ const SingleCarView = () => {
         body: JSON.stringify({
           car_id: car.id,
           user_id: user.id,
-          pickup_location_id: pickupLocation, // adjust to numeric ids if needed
-          return_location_id: returnLocation,
+          pickup_location_id: car.car_location, // use car's fixed location
+          return_location_id: car.car_location, // same location for return
           pickup_at: new Date(pickupAt).toISOString(),
           return_at: new Date(returnAt).toISOString(),
         }),
@@ -356,37 +373,17 @@ const SingleCarView = () => {
           </Text>
 
           <Stack gap={4}>
-            <ChakraField.Root invalid={!!errors.pickupLocation}>
-              <ChakraField.Label>Pick up location</ChakraField.Label>
-              <NativeSelectRoot>
-                <NativeSelectField
-                  placeholder="Select location"
-                  value={pickupLocation}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
-                >
-                  {/* Replace with your real locations */}
-                  <option value="cph">Copenhagen</option>
-                  <option value="aar">Aarhus</option>
-                  <option value="odn">Odense</option>
-                </NativeSelectField>
-              </NativeSelectRoot>
-              {errors.pickupLocation && <ChakraField.ErrorText>{errors.pickupLocation}</ChakraField.ErrorText>}
-            </ChakraField.Root>
-
-            <ChakraField.Root invalid={!!errors.returnLocation}>
-              <ChakraField.Label>Return location</ChakraField.Label>
-              <NativeSelectRoot>
-                <NativeSelectField
-                  placeholder="Select location"
-                  value={returnLocation}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReturnLocation(e.target.value)}
-                >
-                  <option value="cph">Copenhagen</option>
-                  <option value="aar">Aarhus</option>
-                  <option value="odn">Odense</option>
-                </NativeSelectField>
-              </NativeSelectRoot>
-              {errors.returnLocation && <ChakraField.ErrorText>{errors.returnLocation}</ChakraField.ErrorText>}
+            <ChakraField.Root>
+              <ChakraField.Label>Car Location</ChakraField.Label>
+              <Input
+                value={car?.car_location || "Location not available"}
+                readOnly
+                bg="gray.100"
+                cursor="not-allowed"
+              />
+              <ChakraField.HelperText>
+                This car is only available at this location
+              </ChakraField.HelperText>
             </ChakraField.Root>
 
             <ChakraField.Root invalid={!!errors.pickupAt}>
@@ -418,7 +415,7 @@ const SingleCarView = () => {
             </HStack>
 
             <Button
-              onClick={handleBook}
+              onClick={handleBookClick}
               isLoading={submitting}
               disabled={hasErrors || rentalDays === 0}
               variant="primary"
@@ -433,6 +430,92 @@ const SingleCarView = () => {
           </Stack>
         </Box>
       </Grid>
+
+      {/* Confirmation Dialog */}
+      <DialogRoot 
+        open={showConfirmDialog} 
+        onOpenChange={(e) => setShowConfirmDialog(e.open)} 
+        placement="center"
+        motionPreset="slide-in-bottom"
+      >
+        <DialogBackdrop />
+        <DialogContent 
+          maxW="600px" 
+          mx="auto"
+          my="auto"
+          position="fixed"
+          top="50%"
+          left="50%"
+          transform="translate(-50%, -50%)"
+        >
+          <DialogHeader>
+            <DialogTitle>Confirm Your Booking</DialogTitle>
+            <DialogCloseTrigger />
+          </DialogHeader>
+          <DialogBody>
+            <VStack align="start" gap={4}>
+              <Box w="full">
+                <Text fontWeight="bold" fontSize="lg" mb={2}>
+                  {car?.make} {car?.model} ({car?.year})
+                </Text>
+                <Separator mb={3} />
+              </Box>
+
+              <HStack justify="space-between" w="full">
+                <Text color="gray.600">Location:</Text>
+                <Text fontWeight="semibold">{car?.car_location}</Text>
+              </HStack>
+
+              <HStack justify="space-between" w="full">
+                <Text color="gray.600">Pick up:</Text>
+                <Text fontWeight="semibold">
+                  {new Date(pickupAt).toLocaleDateString()} at {new Date(pickupAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </HStack>
+
+              <HStack justify="space-between" w="full">
+                <Text color="gray.600">Return:</Text>
+                <Text fontWeight="semibold">
+                  {new Date(returnAt).toLocaleDateString()} at {new Date(returnAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </HStack>
+
+              <HStack justify="space-between" w="full">
+                <Text color="gray.600">Rental Period:</Text>
+                <Text fontWeight="semibold">{rentalDays} {rentalDays === 1 ? 'day' : 'days'}</Text>
+              </HStack>
+
+              <Separator />
+
+              <HStack justify="space-between" w="full">
+                <Text fontWeight="bold" fontSize="lg">Total Price:</Text>
+                <Text fontWeight="bold" fontSize="lg" color="blue.600">{price} DKK</Text>
+              </HStack>
+
+              <Box w="full" bg="blue.50" p={3} borderRadius="md">
+                <Text fontSize="sm" color="gray.700">
+                  By confirming, you agree to the booking terms and conditions. You can cancel free of charge up to 24 hours before pickup.
+                </Text>
+              </Box>
+            </VStack>
+          </DialogBody>
+          <DialogFooter gap={3}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={confirmBooking}
+              isLoading={submitting}
+            >
+              Confirm Booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogRoot>
     </Box>
   );
 };

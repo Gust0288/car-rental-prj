@@ -37,7 +37,6 @@ export default function CarsPage() {
   
   // Location and date/time filters - Initialize from URL params
   const [pickupLocation, setPickupLocation] = useState(searchParams.get("pickupLocation") || "");
-  const [returnLocation, setReturnLocation] = useState(searchParams.get("returnLocation") || "");
   const [pickupAt, setPickupAt] = useState(
     searchParams.get("pickupAt") || new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
@@ -116,6 +115,13 @@ export default function CarsPage() {
   const applyFilters = (cars: Car[]) => {
     let filtered = [...cars];
 
+    // Filter by location
+    if (pickupLocation && pickupLocation !== "") {
+      filtered = filtered.filter(car => 
+        car.car_location?.toLowerCase() === pickupLocation.toLowerCase()
+      );
+    }
+
     // Filter by make
     if (selectedMake !== "all") {
       filtered = filtered.filter(car => car.make === selectedMake);
@@ -179,6 +185,9 @@ export default function CarsPage() {
   // Get unique drives for the dropdown
   const uniqueDrives = [...new Set(uniqueCars.map(car => car.drive).filter(Boolean))].sort();
 
+  // Get unique locations for the dropdown
+  const uniqueLocations = [...new Set(uniqueCars.map(car => car.car_location).filter(Boolean))].sort();
+
   return (
     <Box p={6}>
       <Container maxW="7xl">
@@ -229,38 +238,26 @@ export default function CarsPage() {
                 >
                 <GridItem>
                   <ChakraField.Root>
-                    <ChakraField.Label>Pick up location</ChakraField.Label>
+                    <ChakraField.Label>Car Location</ChakraField.Label>
                     <NativeSelectRoot>
                       <NativeSelectField
-                        placeholder="Any location"
                         value={pickupLocation}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
                         bg="white"
                       >
-                        <option value="cph">Copenhagen</option>
-                        <option value="aar">Aarhus</option>
-                        <option value="odn">Odense</option>
+                        <option value="">Select location</option>
+                        {uniqueLocations.map(location => (
+                          <option key={location} value={location}>
+                            {capitalizeString(location || '')}
+                          </option>
+                        ))}
                       </NativeSelectField>
                     </NativeSelectRoot>
                   </ChakraField.Root>
                 </GridItem>
 
                 <GridItem>
-                  <ChakraField.Root>
-                    <ChakraField.Label>Return location</ChakraField.Label>
-                    <NativeSelectRoot>
-                      <NativeSelectField
-                        placeholder="Any location"
-                        value={returnLocation}
-                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReturnLocation(e.target.value)}
-                        bg="white"
-                      >
-                        <option value="cph">Copenhagen</option>
-                        <option value="aar">Aarhus</option>
-                        <option value="odn">Odense</option>
-                      </NativeSelectField>
-                    </NativeSelectRoot>
-                  </ChakraField.Root>
+                  {/* Placeholder for visual balance */}
                 </GridItem>
 
                 <GridItem>
