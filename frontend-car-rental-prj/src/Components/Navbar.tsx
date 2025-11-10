@@ -1,4 +1,12 @@
-import { Box, HStack, VStack, Text, Button, Input } from "@chakra-ui/react";
+import {
+  Box,
+  HStack,
+  VStack,
+  Text,
+  Button,
+  Input,
+  
+} from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "../context/UserContext";
@@ -7,7 +15,16 @@ export const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useUser();
+  const { user, logout } = useUser();
+
+  // normalize admin flag: backend may return number (1), string ('1') or boolean true
+  const isAdmin = (() => {
+    const v = user?.admin;
+    if (v === undefined || v === null) return false;
+    if (typeof v === "boolean") return v;
+  const n = Number(v as unknown as number);
+    return !Number.isNaN(n) && n === 1;
+  })();
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
@@ -77,27 +94,70 @@ export const NavBar = () => {
           >
             My Bookings
           </Button>
-          <Button
-            variant={isActivePath("/login") ? "solid" : "ghost"}
-            size="sm"
-            color={isActivePath("/login") ? "blue.500" : "white"}
-            bg={isActivePath("/login") ? "white" : "transparent"}
-            _hover={{ bg: isActivePath("/login") ? "gray.100" : "blue.600" }}
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </Button>
-          <Button
-            variant={isActivePath("/signup") ? "solid" : "ghost"}
-            size="sm"
-            color={isActivePath("/signup") ? "blue.500" : "white"}
-            bg={isActivePath("/signup") ? "white" : "transparent"}
-            _hover={{ bg: isActivePath("/signup") ? "gray.100" : "blue.600" }}
-            onClick={() => navigate("/signup")}
-          >
-            Sign Up
-          </Button>
-          {user?.admin === 1 && (
+          {!user ? (
+            <>
+              <Button
+                variant={isActivePath("/login") ? "solid" : "ghost"}
+                size="sm"
+                color={isActivePath("/login") ? "blue.500" : "white"}
+                bg={isActivePath("/login") ? "white" : "transparent"}
+                _hover={{ bg: isActivePath("/login") ? "gray.100" : "blue.600" }}
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Button>
+              <Button
+                variant={isActivePath("/signup") ? "solid" : "ghost"}
+                size="sm"
+                color={isActivePath("/signup") ? "blue.500" : "white"}
+                bg={isActivePath("/signup") ? "white" : "transparent"}
+                _hover={{ bg: isActivePath("/signup") ? "gray.100" : "blue.600" }}
+                onClick={() => navigate("/signup")}
+              >
+                Sign Up
+              </Button>
+            </>
+          ) : (
+            <HStack gap={3} alignItems="center">
+              <Box
+                bg="white"
+                color="blue.600"
+                borderRadius="full"
+                w="28px"
+                h="28px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                fontSize="sm"
+                fontWeight="bold"
+              >
+                {user ? `${(user.name?.charAt(0) ?? "").toUpperCase()}${(user.user_last_name?.charAt(0) ?? "").toUpperCase()}` : ""}
+              </Box>
+              <Text color="white">{user?.name}</Text>
+              <Button
+                variant="ghost"
+                size="sm"
+                color="white"
+                _hover={{ bg: "blue.600" }}
+                onClick={() => navigate("/profile")}
+              >
+                Profile
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                color="white"
+                _hover={{ bg: "blue.600" }}
+                onClick={() => {
+                  logout();
+                  navigate("/");
+                }}
+              >
+                Logout
+              </Button>
+            </HStack>
+          )}
+          {isAdmin && (
             <Button
               variant={isActivePath("/admin") ? "solid" : "ghost"}
               size="sm"
@@ -204,39 +264,100 @@ export const NavBar = () => {
             >
               My Bookings
             </Button>
-            <Button
-              variant={isActivePath("/login") ? "solid" : "outline"}
-              colorScheme="blue"
-              onClick={() => {
-                navigate("/login");
-                handleToggle();
-              }}
-              width="100%"
-              justifyContent="center"
-              borderWidth="1px"
-              _hover={{ bg: isActivePath("/login") ? "blue.600" : "blue.50" }}
-              size="md"
-              fontSize="md"
-              fontWeight="medium"
-              py={3}
-            >
-              Login
-            </Button>
-            <Button
-              variant={isActivePath("/signup") ? "solid" : "outline"}
-              colorScheme="blue"
-              onClick={() => {
-                navigate("/signup");
-                handleToggle();
-              }}
-              width="100%"
-              size="md"
-              fontSize="md"
-              fontWeight="semibold"
-              py={3}
-            >
-              Sign Up
-            </Button>
+            {!user ? (
+              <>
+                <Button
+                  variant={isActivePath("/login") ? "solid" : "outline"}
+                  colorScheme="blue"
+                  onClick={() => {
+                    navigate("/login");
+                    handleToggle();
+                  }}
+                  width="100%"
+                  justifyContent="center"
+                  borderWidth="1px"
+                  _hover={{ bg: isActivePath("/login") ? "blue.600" : "blue.50" }}
+                  size="md"
+                  fontSize="md"
+                  fontWeight="medium"
+                  py={3}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant={isActivePath("/signup") ? "solid" : "outline"}
+                  colorScheme="blue"
+                  onClick={() => {
+                    navigate("/signup");
+                    handleToggle();
+                  }}
+                  width="100%"
+                  size="md"
+                  fontSize="md"
+                  fontWeight="semibold"
+                  py={3}
+                >
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant={isActivePath("/profile") ? "solid" : "outline"}
+                  colorScheme="blue"
+                  onClick={() => {
+                    navigate("/profile");
+                    handleToggle();
+                  }}
+                  width="100%"
+                  justifyContent="center"
+                  borderWidth="1px"
+                  _hover={{ bg: isActivePath("/profile") ? "blue.600" : "blue.50" }}
+                  size="md"
+                  fontSize="md"
+                  fontWeight="medium"
+                  py={3}
+                >
+                  Profile
+                </Button>
+                <Button
+                  variant="outline"
+                  colorScheme="blue"
+                  onClick={() => {
+                    logout();
+                    handleToggle();
+                    navigate("/");
+                  }}
+                  width="100%"
+                  size="md"
+                  fontSize="md"
+                  fontWeight="semibold"
+                  py={3}
+                >
+                  Logout
+                </Button>
+                {isAdmin && (
+                  <Button
+                    variant={isActivePath("/admin") ? "solid" : "outline"}
+                    colorScheme="blue"
+                    onClick={() => {
+                      navigate("/admin");
+                      handleToggle();
+                    }}
+                    width="100%"
+                    justifyContent="center"
+                    borderWidth="1px"
+                    _hover={{ bg: isActivePath("/admin") ? "blue.600" : "blue.50" }}
+                    size="md"
+                    fontSize="md"
+                    fontWeight="medium"
+                    py={3}
+                  >
+                    Admin
+                  </Button>
+                )}
+              </>
+            )}
           </VStack>
         )}
       </Box>
