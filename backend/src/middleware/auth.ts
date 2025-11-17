@@ -56,7 +56,7 @@ export const requireAdmin = async (
     }
 
     const { rows } = await userPool.query(
-      `SELECT is_admin, user_deleted_at FROM public.users WHERE id = $1`,
+      `SELECT admin, user_deleted_at FROM public.users WHERE id = $1`,
       [req.userId]
     );
 
@@ -74,7 +74,7 @@ export const requireAdmin = async (
       });
     }
 
-    if (parseInt(user.is_admin, 10) !== 1 && user.is_admin !== 1) {
+    if (parseInt(user.admin, 10) !== 1 && user.admin !== 1) {
       return res
         .status(403)
         .json({ error: "Forbidden", message: "Admin privileges required" });
