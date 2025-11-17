@@ -13,8 +13,14 @@ import {
   SkeletonText,
 } from "@chakra-ui/react";
 import { Separator } from "@chakra-ui/react/separator";
-import { FiCheckCircle, FiCalendar, FiMapPin, FiCreditCard } from "react-icons/fi";
+import {
+  FiCheckCircle,
+  FiCalendar,
+  FiMapPin,
+  FiCreditCard,
+} from "react-icons/fi";
 import { Button } from "../Components/Button";
+import { httpClient } from "../services/httpClient";
 
 interface Booking {
   id: number;
@@ -79,12 +85,8 @@ const BookingConfirmation = () => {
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        const res = await fetch(`/api/bookings/${id}`);
-        if (!res.ok) {
-          throw new Error("Booking not found");
-        }
-        const data = await res.json();
-        setBooking(data);
+        const response = await httpClient.get(`/bookings/${id}`);
+        setBooking(response.data);
       } catch (error) {
         console.error("Error fetching booking:", error);
       } finally {
@@ -114,7 +116,8 @@ const BookingConfirmation = () => {
   }
 
   const rentalDays = Math.ceil(
-    (new Date(booking.return_at).getTime() - new Date(booking.pickup_at).getTime()) /
+    (new Date(booking.return_at).getTime() -
+      new Date(booking.pickup_at).getTime()) /
       (24 * 60 * 60 * 1000)
   );
 
@@ -159,8 +162,12 @@ const BookingConfirmation = () => {
             </Heading>
             <HStack gap={2} wrap="wrap">
               <Badge colorScheme="blue">{booking.year}</Badge>
-              {booking.class && <Badge colorScheme="purple">{booking.class}</Badge>}
-              {booking.fuel_type && <Badge colorScheme="green">{booking.fuel_type}</Badge>}
+              {booking.class && (
+                <Badge colorScheme="purple">{booking.class}</Badge>
+              )}
+              {booking.fuel_type && (
+                <Badge colorScheme="green">{booking.fuel_type}</Badge>
+              )}
             </HStack>
           </VStack>
         </Grid>
@@ -184,7 +191,8 @@ const BookingConfirmation = () => {
               <Text color="gray.700">{formatDate(booking.pickup_at)}</Text>
               <Text color="gray.600" fontSize="sm" mt={1}>
                 <FiMapPin style={{ display: "inline", marginRight: "4px" }} />
-                {locationNames[booking.car_location || ''] || booking.car_location}
+                {locationNames[booking.car_location || ""] ||
+                  booking.car_location}
               </Text>
             </Box>
           </HStack>
@@ -200,7 +208,8 @@ const BookingConfirmation = () => {
               <Text color="gray.700">{formatDate(booking.return_at)}</Text>
               <Text color="gray.600" fontSize="sm" mt={1}>
                 <FiMapPin style={{ display: "inline", marginRight: "4px" }} />
-                {locationNames[booking.car_location || ''] || booking.car_location}
+                {locationNames[booking.car_location || ""] ||
+                  booking.car_location}
               </Text>
             </Box>
           </HStack>
@@ -229,7 +238,10 @@ const BookingConfirmation = () => {
                   Total
                 </Text>
                 <Text fontSize="xl" fontWeight="bold" color="blue.600">
-                  {Number.isFinite(totalAmount) ? `${totalAmount.toFixed(2)}` : "--"} DKK
+                  {Number.isFinite(totalAmount)
+                    ? `${totalAmount.toFixed(2)}`
+                    : "--"}{" "}
+                  DKK
                 </Text>
               </HStack>
             </VStack>
@@ -241,8 +253,8 @@ const BookingConfirmation = () => {
               <Text fontWeight="semibold">Payment Status</Text>
             </HStack>
             <Text fontSize="sm" color="gray.700">
-              Payment will be processed at pickup. Please bring a valid credit card and driver's
-              license.
+              Payment will be processed at pickup. Please bring a valid credit
+              card and driver's license.
             </Text>
           </Box>
         </VStack>
@@ -253,7 +265,11 @@ const BookingConfirmation = () => {
         <Button onClick={() => navigate("/cars")} variant="outline" size="lg">
           Browse More Cars
         </Button>
-        <Button onClick={() => navigate("/my-bookings")} variant="primary" size="lg">
+        <Button
+          onClick={() => navigate("/my-bookings")}
+          variant="primary"
+          size="lg"
+        >
           View My Bookings
         </Button>
       </HStack>
