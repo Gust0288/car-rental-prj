@@ -12,14 +12,17 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:3001",
+  "http://localhost",
+].filter((o): o is string => Boolean(o));
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:3001",
-      "http://localhost",
-    ],
+    origin: allowedOrigins,
   })
 );
 
