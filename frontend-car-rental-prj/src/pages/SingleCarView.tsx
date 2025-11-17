@@ -36,6 +36,7 @@ import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { useUser } from "../context/UserContext";
 import { toaster } from "../utils/toaster";
+import { httpClient } from "../services/httpClient";
 
 const labelize = (s: string) =>
   s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -216,33 +217,51 @@ const SingleCarView = () => {
     setShowConfirmDialog(false);
 
     try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          car_id: car.id,
-          user_id: user.id,
-          pickup_location_id: car.car_location, // use car's fixed location
-          return_location_id: car.car_location, // same location for return
-          pickup_at: new Date(pickupAt).toISOString(),
-          return_at: new Date(returnAt).toISOString(),
-        }),
+      console.log("📤 Sending booking request:", {
+        car_id: car.id,
+        user_id: user.id,
+        pickup_location_id: car.car_location,
+        return_location_id: car.car_location,
+        pickup_at: new Date(pickupAt).toISOString(),
+        return_at: new Date(returnAt).toISOString(),
       });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Booking failed");
-      }
 
-      const booking = await res.json();
-      toaster.create({ title: "Booking confirmed", type: "success" });
+      const response = await httpClient.post("/bookings", {
+        car_id: car.id,
+        user_id: user.id,
+        pickup_location_id: car.car_location,
+        return_location_id: car.car_location,
+        pickup_at: new Date(pickupAt).toISOString(),
+        return_at: new Date(returnAt).toISOString(),
+      });
+
+      console.log("✅ Booking successful:", response.data);
+
+      const booking = response.data;
+      toaster.create({
+        title: "Booking confirmed",
+        type: "success",
+        duration: 5000,
+      });
 
       // Navigate to confirmation page
       navigate(`/bookings/${booking.id}`);
-    } catch (e: unknown) {
+    } catch (error: any) {
+      console.error("❌ Booking error:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Unknown error";
+
       toaster.create({
         title: "Could not complete booking",
-        description: e instanceof Error ? e.message : "Unknown error",
+        description: errorMessage,
         type: "error",
+        duration: 5000,
       });
     } finally {
       setSubmitting(false);
