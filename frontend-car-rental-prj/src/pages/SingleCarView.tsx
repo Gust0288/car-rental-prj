@@ -1,6 +1,11 @@
 // src/pages/SingleCarView.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 import {
   VStack,
   Text,
@@ -22,7 +27,6 @@ import {
   DialogTitle,
   DialogBackdrop,
   DialogCloseTrigger,
-
 } from "@chakra-ui/react";
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { Separator } from "@chakra-ui/react/separator";
@@ -34,9 +38,7 @@ import { useUser } from "../context/UserContext";
 import { toaster } from "../utils/toaster";
 
 const labelize = (s: string) =>
-  s
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 const capitalizeString = (str: string) => {
   return str
@@ -49,8 +51,10 @@ const safeText = (v: unknown) =>
   v === null || v === undefined || v === "" ? "N/A" : String(v);
 
 // Convert MPG to L/100km and km/L for EU users
-const mpgToLPer100 = (mpg?: number | null) => (mpg && mpg > 0 ? 235.214583 / mpg : null);
-const mpgToKmPerL = (mpg?: number | null) => (mpg && mpg > 0 ? (mpg * 1.60934) / 3.78541 : null);
+const mpgToLPer100 = (mpg?: number | null) =>
+  mpg && mpg > 0 ? 235.214583 / mpg : null;
+const mpgToKmPerL = (mpg?: number | null) =>
+  mpg && mpg > 0 ? (mpg * 1.60934) / 3.78541 : null;
 
 // Pretty print transmission codes if needed
 const prettyTransmission = (t?: string | null) => {
@@ -180,7 +184,10 @@ const SingleCarView = () => {
   const price = rentalDays * dailyRate;
 
   const errors = {
-    pickupAt: start.getTime() > Date.now() - 60 * 1000 ? "" : "Pick up must be in the future",
+    pickupAt:
+      start.getTime() > Date.now() - 60 * 1000
+        ? ""
+        : "Pick up must be in the future",
     returnAt: end > start ? "" : "Return must be after pick up",
   };
   const hasErrors = Object.values(errors).some(Boolean);
@@ -207,8 +214,15 @@ const SingleCarView = () => {
 
     setSubmitting(true);
     setShowConfirmDialog(false);
-    
+
     try {
+      console.log("Attempting to create booking with:", {
+        car_id: car.id,
+        user_id: user.id,
+        pickup_at: new Date(pickupAt).toISOString(),
+        return_at: new Date(returnAt).toISOString(),
+      });
+
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -219,22 +233,49 @@ const SingleCarView = () => {
           return_at: new Date(returnAt).toISOString(),
         }),
       });
+
+      console.log("Response status:", res.status);
+      console.log(
+        "Response headers:",
+        Object.fromEntries(res.headers.entries())
+      );
+
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Booking failed");
+        let errorMessage = `Server error: ${res.status}`;
+        try {
+          const errorData = await res.json();
+          console.error("Error response JSON:", errorData);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          const text = await res.text();
+          console.error("Error response text:", text);
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
-      
+
       const booking = await res.json();
+      console.log("Booking created successfully:", booking);
+
       toaster.create({ title: "Booking confirmed", type: "success" });
-      
+
       // Navigate to confirmation page
       navigate(`/bookings/${booking.id}`);
     } catch (e: unknown) {
+      console.error("Booking error:", e);
+      const errorMessage = e instanceof Error ? e.message : "Unknown error";
+
       toaster.create({
         title: "Could not complete booking",
-        description: e instanceof Error ? e.message : "Unknown error",
+        description: errorMessage,
         type: "error",
+        duration: 5000,
       });
+
+      // Show alert with full error for debugging
+      alert(
+        `Booking failed:\n\n${errorMessage}\n\nCheck browser console for details.`
+      );
     } finally {
       setSubmitting(false);
     }
@@ -248,7 +289,11 @@ const SingleCarView = () => {
         </Button>
       </Box>
 
-      <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8} alignItems="start">
+      <Grid
+        templateColumns={{ base: "1fr", lg: "2fr 1fr" }}
+        gap={8}
+        alignItems="start"
+      >
         {/* Left column: car info */}
         <VStack gap={6} align="start" w="full">
           <HStack align="center" wrap="wrap" gap={3}>
@@ -278,7 +323,9 @@ const SingleCarView = () => {
           {car.img_path ? (
             <Image
               src={car.img_path}
-              alt={`${capitalizeString(car.make)} ${capitalizeString(car.model)}`}
+              alt={`${capitalizeString(car.make)} ${capitalizeString(
+                car.model
+              )}`}
               borderRadius="lg"
               maxH="520px"
               w="100%"
@@ -314,22 +361,34 @@ const SingleCarView = () => {
               <SpecItem label="Make" value={capitalizeString(car.make)} />
               <SpecItem label="Model" value={capitalizeString(car.model)} />
               <SpecItem label="Year" value={safeText(car.year)} />
-              <SpecItem label="Class" value={safeText(car.class && labelize(car.class))} />
+              <SpecItem
+                label="Class"
+                value={safeText(car.class && labelize(car.class))}
+              />
               <SpecItem
                 label="Fuel Type"
                 value={safeText(car.fuel_type && labelize(car.fuel_type))}
               />
-              <SpecItem label="Drive" value={safeText(car.drive && car.drive.toUpperCase())} />
-              <SpecItem label="Transmission" value={prettyTransmission(car.transmission)} />
+              <SpecItem
+                label="Drive"
+                value={safeText(car.drive && car.drive.toUpperCase())}
+              />
+              <SpecItem
+                label="Transmission"
+                value={prettyTransmission(car.transmission)}
+              />
               <SpecItem label="Cylinders" value={safeText(car.cylinders)} />
-              <SpecItem label="Displacement" value={car.displacement ? `${car.displacement} L` : "N/A"} />
+              <SpecItem
+                label="Displacement"
+                value={car.displacement ? `${car.displacement} L` : "N/A"}
+              />
               <SpecItem
                 label="City MPG"
                 value={
                   car.city_mpg
-                    ? `${car.city_mpg} mpg • ${cityEU.kml?.toFixed(2)} km/L • ${cityEU.l100?.toFixed(
-                        1
-                      )} L/100km`
+                    ? `${car.city_mpg} mpg • ${cityEU.kml?.toFixed(
+                        2
+                      )} km/L • ${cityEU.l100?.toFixed(1)} L/100km`
                     : "N/A"
                 }
               />
@@ -337,9 +396,9 @@ const SingleCarView = () => {
                 label="Highway MPG"
                 value={
                   car.highway_mpg
-                    ? `${car.highway_mpg} mpg • ${hwyEU.kml?.toFixed(2)} km/L • ${hwyEU.l100?.toFixed(
-                        1
-                      )} L/100km`
+                    ? `${car.highway_mpg} mpg • ${hwyEU.kml?.toFixed(
+                        2
+                      )} km/L • ${hwyEU.l100?.toFixed(1)} L/100km`
                     : "N/A"
                 }
               />
@@ -347,9 +406,9 @@ const SingleCarView = () => {
                 label="Combined MPG"
                 value={
                   car.combination_mpg
-                    ? `${car.combination_mpg} mpg • ${combEU.kml?.toFixed(2)} km/L • ${combEU.l100?.toFixed(
-                        1
-                      )} L/100km`
+                    ? `${car.combination_mpg} mpg • ${combEU.kml?.toFixed(
+                        2
+                      )} km/L • ${combEU.l100?.toFixed(1)} L/100km`
                     : "N/A"
                 }
               />
@@ -358,7 +417,14 @@ const SingleCarView = () => {
         </VStack>
 
         {/* Right column: booking card */}
-        <Box position="sticky" top="16px" bg="white" borderRadius="lg" shadow="md" p={5}>
+        <Box
+          position="sticky"
+          top="16px"
+          bg="white"
+          borderRadius="lg"
+          shadow="md"
+          p={5}
+        >
           <Heading size="md" mb={2}>
             Book this car
           </Heading>
@@ -387,7 +453,9 @@ const SingleCarView = () => {
                 value={pickupAt}
                 onChange={(e) => setPickupAt(e.target.value)}
               />
-              {errors.pickupAt && <ChakraField.ErrorText>{errors.pickupAt}</ChakraField.ErrorText>}
+              {errors.pickupAt && (
+                <ChakraField.ErrorText>{errors.pickupAt}</ChakraField.ErrorText>
+              )}
             </ChakraField.Root>
 
             <ChakraField.Root invalid={!!errors.returnAt}>
@@ -398,7 +466,9 @@ const SingleCarView = () => {
                 onChange={(e) => setReturnAt(e.target.value)}
                 min={pickupAt}
               />
-              {errors.returnAt && <ChakraField.ErrorText>{errors.returnAt}</ChakraField.ErrorText>}
+              {errors.returnAt && (
+                <ChakraField.ErrorText>{errors.returnAt}</ChakraField.ErrorText>
+              )}
             </ChakraField.Root>
 
             <Separator />
@@ -419,22 +489,23 @@ const SingleCarView = () => {
             </Button>
 
             <Text fontSize="xs" color="gray.500" textAlign="center">
-              You will not be charged yet. Final price is confirmed during checkout.
+              You will not be charged yet. Final price is confirmed during
+              checkout.
             </Text>
           </Stack>
         </Box>
       </Grid>
 
       {/* Confirmation Dialog */}
-      <DialogRoot 
-        open={showConfirmDialog} 
-        onOpenChange={(e) => setShowConfirmDialog(e.open)} 
+      <DialogRoot
+        open={showConfirmDialog}
+        onOpenChange={(e) => setShowConfirmDialog(e.open)}
         placement="center"
         motionPreset="slide-in-bottom"
       >
         <DialogBackdrop />
-        <DialogContent 
-          maxW="600px" 
+        <DialogContent
+          maxW="600px"
           mx="auto"
           my="auto"
           position="fixed"
@@ -463,32 +534,47 @@ const SingleCarView = () => {
               <HStack justify="space-between" w="full">
                 <Text color="gray.600">Pick up:</Text>
                 <Text fontWeight="semibold">
-                  {new Date(pickupAt).toLocaleDateString()} at {new Date(pickupAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(pickupAt).toLocaleDateString()} at{" "}
+                  {new Date(pickupAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </Text>
               </HStack>
 
               <HStack justify="space-between" w="full">
                 <Text color="gray.600">Return:</Text>
                 <Text fontWeight="semibold">
-                  {new Date(returnAt).toLocaleDateString()} at {new Date(returnAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(returnAt).toLocaleDateString()} at{" "}
+                  {new Date(returnAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </Text>
               </HStack>
 
               <HStack justify="space-between" w="full">
                 <Text color="gray.600">Rental Period:</Text>
-                <Text fontWeight="semibold">{rentalDays} {rentalDays === 1 ? 'day' : 'days'}</Text>
+                <Text fontWeight="semibold">
+                  {rentalDays} {rentalDays === 1 ? "day" : "days"}
+                </Text>
               </HStack>
 
               <Separator />
 
               <HStack justify="space-between" w="full">
-                <Text fontWeight="bold" fontSize="lg">Total Price:</Text>
-                <Text fontWeight="bold" fontSize="lg" color="blue.600">{price} DKK</Text>
+                <Text fontWeight="bold" fontSize="lg">
+                  Total Price:
+                </Text>
+                <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                  {price} DKK
+                </Text>
               </HStack>
 
               <Box w="full" bg="blue.50" p={3} borderRadius="md">
                 <Text fontSize="sm" color="gray.700">
-                  By confirming, you agree to the booking terms and conditions. You can cancel free of charge up to 24 hours before pickup.
+                  By confirming, you agree to the booking terms and conditions.
+                  You can cancel free of charge up to 24 hours before pickup.
                 </Text>
               </Box>
             </VStack>
