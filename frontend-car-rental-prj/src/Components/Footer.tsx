@@ -39,39 +39,43 @@ export const Footer = () => {
                 Your trusted partner for reliable and affordable car rentals.
                 Explore the world with our premium fleet of vehicles.
               </Text>
-              <HStack spacing={3}>
+              <HStack gap={3}>
                 <IconButton
                   aria-label="Facebook"
-                  icon={<FaFacebook />}
                   size="sm"
                   variant="ghost"
                   color="blue.500"
                   _hover={{ bg: "blue.50" }}
-                />
+                >
+                  <FaFacebook />
+                </IconButton>
                 <IconButton
                   aria-label="Twitter"
-                  icon={<FaTwitter />}
                   size="sm"
                   variant="ghost"
                   color="blue.500"
                   _hover={{ bg: "blue.50" }}
-                />
+                >
+                  <FaTwitter />
+                </IconButton>
                 <IconButton
                   aria-label="Instagram"
-                  icon={<FaInstagram />}
                   size="sm"
                   variant="ghost"
                   color="blue.500"
                   _hover={{ bg: "blue.50" }}
-                />
+                >
+                  <FaInstagram />
+                </IconButton>
                 <IconButton
                   aria-label="LinkedIn"
-                  icon={<FaLinkedin />}
                   size="sm"
                   variant="ghost"
                   color="blue.500"
                   _hover={{ bg: "blue.50" }}
-                />
+                >
+                  <FaLinkedin />
+                </IconButton>
               </HStack>
             </VStack>
 
@@ -194,7 +198,7 @@ export const Footer = () => {
           {/* Bottom Section */}
           <Stack
             direction={{ base: "column", md: "row" }}
-            spacing={4}
+            gap={4}
             justify="space-between"
             align="center"
           >
