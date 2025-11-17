@@ -6,7 +6,7 @@ import {
   Link,
   VStack,
   HStack,
-  IconButton,
+  Button,
 } from "@chakra-ui/react";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
@@ -16,10 +16,12 @@ export const Footer = () => {
       <Box height="1px" bg="gray.200" width="100%" />
       <Container maxW="7xl" py={10}>
         <Stack gap={8}>
+        <Stack gap={8}>
           {/* Main Footer Content */}
           <Stack direction={{ base: "column", md: "row" }} gap={8} justify="space-between">
+          <Stack direction={{ base: "column", md: "row" }} gap={8} justify="space-between">
             {/* Company Info */}
-            <VStack align="start" maxW="300px">
+            <VStack align="start" maxW="300px" gap={3}>
               <Text fontSize="xl" fontWeight="bold" color="blue.500">
                 Car Rental
               </Text>
@@ -69,9 +71,11 @@ export const Footer = () => {
 
             {/* Quick Links */}
             <VStack align="start" gap={3}>
+            <VStack align="start" gap={3}>
               <Text fontWeight="bold" fontSize="md">
                 Quick Links
               </Text>
+              <Stack gap={2}>
               <Stack gap={2}>
                 <Link href="#" color="blue.500" _hover={{ textDecoration: "underline" }}>
                   Home
@@ -93,9 +97,11 @@ export const Footer = () => {
 
             {/* Services */}
             <VStack align="start" gap={3}>
+            <VStack align="start" gap={3}>
               <Text fontWeight="bold" fontSize="md">
                 Services
               </Text>
+              <Stack gap={2}>
               <Stack gap={2}>
                 <Link href="#" color="blue.500" _hover={{ textDecoration: "underline" }}>
                   Car Rental
@@ -117,18 +123,23 @@ export const Footer = () => {
 
             {/* Contact Info */}
             <VStack align="start" gap={3}>
+            <VStack align="start" gap={3}>
               <Text fontWeight="bold" fontSize="md">
                 Contact Us
               </Text>
+              <Stack gap={2}>
+                <HStack gap={3}>
               <Stack gap={2}>
                 <HStack gap={3}>
                   <FaPhone size={14} />
                   <Text fontSize="sm">+45 12 34 56 78</Text>
                 </HStack>
                 <HStack gap={3}>
+                <HStack gap={3}>
                   <FaEnvelope size={14} />
                   <Text fontSize="sm">info@carrental.dk</Text>
                 </HStack>
+                <HStack gap={3} align="start">
                 <HStack gap={3} align="start">
                   <FaMapMarkerAlt size={14} style={{ margin: 2 }} />
                   <Text fontSize="sm">
@@ -152,6 +163,7 @@ export const Footer = () => {
             <Text fontSize="sm">
               © 2025 Car Rental. All rights reserved.
             </Text>
+            <HStack gap={6}>
             <HStack gap={6}>
               <Link href="#" fontSize="sm" color="blue.500" _hover={{ textDecoration: "underline" }}>
                 Privacy Policy

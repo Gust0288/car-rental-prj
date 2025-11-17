@@ -20,12 +20,11 @@ interface Booking {
   id: number;
   car_id: number;
   user_id: number;
-  pickup_location_id: string;
-  return_location_id: string;
+  car_location?: string;
   pickup_at: string;
   return_at: string;
   status: string;
-  price_total: string;
+  price_total: number;
   created_at: string;
   updated_at: string;
   make: string;
@@ -119,6 +118,9 @@ const BookingConfirmation = () => {
       (24 * 60 * 60 * 1000)
   );
 
+  // Ensure price_total is handled safely even if backend returns it as a string
+  const totalAmount = Number(booking.price_total);
+
   return (
     <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
       {/* Success Header */}
@@ -182,7 +184,7 @@ const BookingConfirmation = () => {
               <Text color="gray.700">{formatDate(booking.pickup_at)}</Text>
               <Text color="gray.600" fontSize="sm" mt={1}>
                 <FiMapPin style={{ display: "inline", marginRight: "4px" }} />
-                {locationNames[booking.pickup_location_id] || booking.pickup_location_id}
+                {locationNames[booking.car_location || ''] || booking.car_location}
               </Text>
             </Box>
           </HStack>
@@ -198,7 +200,7 @@ const BookingConfirmation = () => {
               <Text color="gray.700">{formatDate(booking.return_at)}</Text>
               <Text color="gray.600" fontSize="sm" mt={1}>
                 <FiMapPin style={{ display: "inline", marginRight: "4px" }} />
-                {locationNames[booking.return_location_id] || booking.return_location_id}
+                {locationNames[booking.car_location || ''] || booking.car_location}
               </Text>
             </Box>
           </HStack>
@@ -227,7 +229,7 @@ const BookingConfirmation = () => {
                   Total
                 </Text>
                 <Text fontSize="xl" fontWeight="bold" color="blue.600">
-                  {parseFloat(booking.price_total).toFixed(2)} DKK
+                  {Number.isFinite(totalAmount) ? `${totalAmount.toFixed(2)}` : "--"} DKK
                 </Text>
               </HStack>
             </VStack>

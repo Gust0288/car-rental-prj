@@ -42,24 +42,33 @@ export default function App() {
           </Box>
           <Footer />
         </Box>
-       
+
         <Toaster toaster={toaster}>
           {(toast) => (
             <Box
               px={4}
               py={3}
               bg={
-                toast.type === 'success' ? 'green.500' : 
-                toast.type === 'error' ? 'red.500' : 
-                toast.type === 'warning' ? 'orange.500' : 
-                'blue.500'
+                toast.type === "success"
+                  ? "green.500"
+                  : toast.type === "error"
+                  ? "red.500"
+                  : toast.type === "warning"
+                  ? "orange.500"
+                  : "blue.500"
               }
               color="white"
               borderRadius="md"
               boxShadow="lg"
             >
-              {toast.title && <Box fontWeight="bold" mb={1}>{toast.title}</Box>}
-              {toast.description && <Box fontSize="sm">{toast.description}</Box>}
+              {toast.title && (
+                <Box fontWeight="bold" mb={1}>
+                  {toast.title}
+                </Box>
+              )}
+              {toast.description && (
+                <Box fontSize="sm">{toast.description}</Box>
+              )}
             </Box>
           )}
         </Toaster>
