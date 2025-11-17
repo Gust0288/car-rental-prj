@@ -216,66 +216,34 @@ const SingleCarView = () => {
     setShowConfirmDialog(false);
 
     try {
-      console.log("Attempting to create booking with:", {
-        car_id: car.id,
-        user_id: user.id,
-        pickup_at: new Date(pickupAt).toISOString(),
-        return_at: new Date(returnAt).toISOString(),
-      });
-
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           car_id: car.id,
           user_id: user.id,
+          pickup_location_id: car.car_location, // use car's fixed location
+          return_location_id: car.car_location, // same location for return
           pickup_at: new Date(pickupAt).toISOString(),
           return_at: new Date(returnAt).toISOString(),
         }),
       });
-
-      console.log("Response status:", res.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(res.headers.entries())
-      );
-
       if (!res.ok) {
-        let errorMessage = `Server error: ${res.status}`;
-        try {
-          const errorData = await res.json();
-          console.error("Error response JSON:", errorData);
-          errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch {
-          const text = await res.text();
-          console.error("Error response text:", text);
-          errorMessage = text || errorMessage;
-        }
-        throw new Error(errorMessage);
+        const text = await res.text();
+        throw new Error(text || "Booking failed");
       }
 
       const booking = await res.json();
-      console.log("Booking created successfully:", booking);
-
       toaster.create({ title: "Booking confirmed", type: "success" });
 
       // Navigate to confirmation page
       navigate(`/bookings/${booking.id}`);
     } catch (e: unknown) {
-      console.error("Booking error:", e);
-      const errorMessage = e instanceof Error ? e.message : "Unknown error";
-
       toaster.create({
         title: "Could not complete booking",
-        description: errorMessage,
+        description: e instanceof Error ? e.message : "Unknown error",
         type: "error",
-        duration: 5000,
       });
-
-      // Show alert with full error for debugging
-      alert(
-        `Booking failed:\n\n${errorMessage}\n\nCheck browser console for details.`
-      );
     } finally {
       setSubmitting(false);
     }
@@ -412,6 +380,7 @@ const SingleCarView = () => {
                     : "N/A"
                 }
               />
+              <SpecItem label="ID" value={safeText(car.id)} />
             </Grid>
           </Box>
         </VStack>
