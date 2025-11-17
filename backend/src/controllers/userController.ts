@@ -82,7 +82,7 @@ export const loginUser = async (req: Request, res: Response) => {
     logger.info("User login attempt", { email });
 
     const { rows } = await userPool.query(
-      `SELECT id, username, name, user_last_name, email, password, user_created_at 
+      `SELECT id, username, name, user_last_name, email, password, user_created_at, is_admin 
        FROM public.users 
        WHERE email = $1 AND user_deleted_at IS NULL`,
       [email]
@@ -111,6 +111,7 @@ export const loginUser = async (req: Request, res: Response) => {
       {
         userId: user.id,
         email: user.email,
+        isAdmin: user.is_admin === 1,
       },
       process.env.JWT_SECRET || "fallback_secret",
       { expiresIn: "24h" }
@@ -131,6 +132,7 @@ export const loginUser = async (req: Request, res: Response) => {
         user_last_name: user.user_last_name,
         email: user.email,
         user_created_at: user.user_created_at,
+        is_admin: user.is_admin,
       },
       token,
     });
