@@ -27,7 +27,7 @@ export const NavBar = () => {
 
   // Search state and debounced navigation
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search, 500);
   const [suggestions, setSuggestions] = useState<Car[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -144,9 +144,22 @@ export const NavBar = () => {
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search cars"
               size="sm"
+              pr="3rem"
             />
             {search ? (
-              <Button size="sm" variant="ghost" color="white" onClick={() => { setSearch(""); setSuggestions([]); }}>
+              <Button
+                size="sm"
+                variant="ghost"
+                color="gray.600"
+                onClick={() => {
+                  setSearch("");
+                  setSuggestions([]);
+                }}
+                position="absolute"
+                right="1px"
+                top="50%"
+                transform="translateY(-50%)"
+              >
                 ×
               </Button>
             ) : null}
