@@ -15,8 +15,8 @@ import {
 import { Separator } from "@chakra-ui/react/separator";
 import { FiCalendar, FiMapPin, FiAlertCircle } from "react-icons/fi";
 import { useUser } from "../context/UserContext";
-import { Button } from "../Components/Button";
-import { BookingsSkeletonLoader } from "../Components/BookingsSkeletonLoader";
+import { Button } from "../components/Button";
+import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader";
 import { getUserBookings, type UserBooking } from "../services/bookings";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 

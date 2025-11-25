@@ -38,7 +38,7 @@ import { useUser } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/api-client";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
-import { RedirectingLoader } from "../Components/RedirectingLoader";
+import { RedirectingLoader } from "../components/RedirectingLoader";
 
 // variables
 const RESPONSIVE_SIZES = {

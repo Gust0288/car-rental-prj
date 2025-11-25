@@ -2,17 +2,36 @@ import { Request, Response } from "express";
 import { pool } from "../config/database.js";
 import { logger } from "../utils/logger.js";
 
-export const getAllCars = async (_req: Request, res: Response) => {
+export const getAllCars = async (req: Request, res: Response) => {
   try {
     logger.info("Fetching all cars");
-    const { rows } = await pool.query(
-      `SELECT id, make, model, year, class, city_mpg, highway_mpg, 
+
+    const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
+    const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : 0;
+
+    let baseQuery = `SELECT id, make, model, year, class, city_mpg, highway_mpg, 
               combination_mpg, fuel_type, drive, transmission, 
               cylinders, displacement, img_path, car_location
-       FROM public.cars 
-       ORDER BY id ASC`
-    );
-    logger.info("Successfully fetched all cars", { count: rows.length });
+       FROM public.cars`;
+
+    const params: Array<string | number> = [];
+
+    if (search && search.length > 0) {
+      // search across make, model and class (case-insensitive)
+      params.push(`%${search}%`);
+      params.push(`%${search}%`);
+      params.push(`%${search}%`);
+      baseQuery += ` WHERE make ILIKE $1 OR model ILIKE $2 OR class ILIKE $3`;
+    }
+
+    baseQuery += ` ORDER BY id ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit);
+    params.push(offset);
+
+    const { rows } = await pool.query(baseQuery, params as any[]);
+
+    logger.info("Successfully fetched cars", { count: rows.length });
     res.json(rows);
   } catch (error) {
     logger.error("Failed to fetch all cars", error);

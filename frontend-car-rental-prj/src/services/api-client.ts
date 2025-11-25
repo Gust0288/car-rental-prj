@@ -13,7 +13,8 @@ export const authService = {
     confirmPassword: string;
   }) => httpClient.post("/users/signup", userData),
 
-  getProfile: (userId: number) => httpClient.get(`/users/profile/${userId}`),
+  getProfile: (userId: number, config?: any) =>
+    httpClient.get(`/users/profile/${userId}`, config),
 
   updateProfile: (
     userId: number,
@@ -31,7 +32,14 @@ export const authService = {
 
 // Car services
 export const carService = {
-  getAllCars: () => httpClient.get("/cars"),
+  getAllCars: (search?: string, limit?: number, offset?: number) => {
+    const params: string[] = [];
+    if (search) params.push(`search=${encodeURIComponent(String(search))}`);
+    if (typeof limit === "number") params.push(`limit=${limit}`);
+    if (typeof offset === "number") params.push(`offset=${offset}`);
+    const qs = params.length ? `?${params.join("&")}` : "";
+    return httpClient.get(`/cars${qs}`);
+  },
   getCarById: (carId: number) => httpClient.get(`/cars/${carId}`),
   // Add more car-related endpoints as needed
 };

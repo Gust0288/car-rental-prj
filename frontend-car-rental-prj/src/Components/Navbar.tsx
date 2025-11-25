@@ -1,7 +1,19 @@
-import { Box, HStack, VStack, Text, Button, Input } from "@chakra-ui/react";
-import { useState } from "react";
+import {
+  Box,
+  HStack,
+  VStack,
+  Text,
+  Button,
+  Input,
+  Image,
+  Spinner,
+} from "@chakra-ui/react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { useDebounce } from "../hooks/useDebounce";
+import { carService } from "../services/api-client";
+import type { Car } from "../services/cars";
 
 export const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +24,84 @@ export const NavBar = () => {
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
+
+  // Search state and debounced navigation
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+  const [suggestions, setSuggestions] = useState<Car[]>([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const suppressNavRef = useRef(false);
+  useEffect(() => {
+    // Only navigate when the user has actually typed something (non-empty),
+    // or when we are already on /cars and need to clear an existing search
+    // query. This avoids forcing the app to `/cars` on initial mount.
+    try {
+      const onCarsPath = location.pathname.startsWith("/cars");
+
+      if (suppressNavRef.current) {
+        suppressNavRef.current = false;
+        return;
+      }
+
+      if (debouncedSearch && debouncedSearch.length > 0) {
+        // navigate when the user explicitly presses Enter or clicks a result.
+        // keep showing suggestions (but also update URL when user expects it)
+        navigate(`/cars?search=${encodeURIComponent(debouncedSearch)}`);
+        return;
+      }
+
+      // If the debounced search is empty, only navigate to `/cars` to clear
+      // an existing query string when we're already on the cars page and
+      // there is a search param present.
+      if (debouncedSearch === "" && onCarsPath && location.search) {
+        navigate(`/cars`);
+      }
+    } catch (e) {
+      // defensive: don't let navigation errors lock the app
+      console.error("Navbar search navigation error:", e);
+    }
+  }, [debouncedSearch, navigate, location.pathname, location.search]);
+
+  // Fetch suggestions for the dropdown when the debounced search changes
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!debouncedSearch || debouncedSearch.length === 0) {
+        setSuggestions([]);
+        return;
+      }
+      setSuggestionsLoading(true);
+      try {
+        const resp = await carService.getAllCars(debouncedSearch, 5);
+        const data = resp?.data || [];
+        if (mounted) setSuggestions(data as Car[]);
+      } catch (err) {
+        // swallow suggestion errors but clear suggestions
+        console.error("Failed to load suggestions", err);
+        if (mounted) setSuggestions([]);
+      } finally {
+        if (mounted) setSuggestionsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [debouncedSearch]);
+
+  // close suggestions when clicking outside
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapperRef.current) return;
+      if (!wrapperRef.current.contains(e.target as Node)) {
+        setSuggestions([]);
+      }
+    };
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, []);
 
   const isActivePath = (path: string) => {
     return location.pathname === path;
@@ -45,13 +135,78 @@ export const NavBar = () => {
         </Text>
         {/* debug badge removed */}
 
-        <Input
-          placeholder="Search for cars..."
-          width="100%"
-          maxW="400px"
-          mx={4}
-          bg="white"
-        />
+        <HStack maxW="400px" mx={4} width="100%">
+          <Box ref={wrapperRef} width="100%" position="relative">
+            <Input
+              placeholder="Search for cars..."
+              bg="white"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search cars"
+              size="sm"
+            />
+            {search ? (
+              <Button size="sm" variant="ghost" color="white" onClick={() => { setSearch(""); setSuggestions([]); }}>
+                ×
+              </Button>
+            ) : null}
+
+            {(suggestionsLoading || (suggestions && suggestions.length > 0)) && (
+              <Box
+                position="absolute"
+                top="calc(100% + 6px)"
+                left={0}
+                right={0}
+                bg="white"
+                border="1px solid"
+                borderColor="gray.200"
+                borderRadius="md"
+                shadow="md"
+                zIndex={50}
+                maxH="300px"
+                overflowY="auto"
+              >
+                {suggestionsLoading ? (
+                  <HStack p={3} justifyContent="center">
+                    <Spinner size="sm" />
+                    <Text fontSize="sm">Loading...</Text>
+                  </HStack>
+                ) : (
+                  <Box>
+                    {suggestions.map((c) => (
+                      <Box
+                        key={c.id}
+                        _hover={{ bg: "gray.50" }}
+                        cursor="pointer"
+                        px={3}
+                        py={2}
+                          onClick={() => {
+                            // prevent the debounced search effect from forcing a
+                            // navigation back to /cars (debouncedSearch may still
+                            // be non-empty until the debounce fires).
+                            suppressNavRef.current = true;
+                            setSearch("");
+                            setSuggestions([]);
+                            navigate(`/car/${c.id}`);
+                          }}
+                      >
+                        <HStack gap={3}>
+                          {c.img_path ? (
+                            <Image src={c.img_path} boxSize="48px" objectFit="cover" borderRadius="md" />
+                          ) : null}
+                          <Box>
+                            <Text fontWeight="semibold">{c.make} {c.model}</Text>
+                            <Text fontSize="sm" color="gray.600">{c.year || ''} · {c.car_location || ''}</Text>
+                          </Box>
+                        </HStack>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+        </HStack>
 
         <HStack gap={2}>
           <Button
