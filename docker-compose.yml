@@ -1,37 +1,40 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database - COMMENTED OUT (using local PostgreSQL)
-  # database:
-  #   image: postgres:15-alpine
-  #   environment:
-  #     POSTGRES_DB: appdb
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: password
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #     - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Backend API
   backend:
     build: ./backend
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgres://postgres:password@host.docker.internal:5432/car_rental_db
-      USER_DATABASE_URL: postgres://postgres:password@host.docker.internal:5432/car_rental_user_data
+      # Connect to the 'database' service defined above
+      DATABASE_URL: postgres://postgres:password@database:5432/car_rental_db
+      USER_DATABASE_URL: postgres://postgres:password@database:5432/car_rental_user_data
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       PORT: 3001
     ports:
       - "3001:3001"
+    depends_on:
+      database:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3001/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -45,6 +48,17 @@ services:
       - "3009:80"
     depends_on:
       - backend
+
+  # pgAdmin - Database GUI
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
 
 volumes:
   postgres_data:
