@@ -1,14 +1,23 @@
 import { Request, Response } from "express";
 import { pool, userPool } from "../config/database.js";
 
+// Mark overdue bookings as expired (idempotent)
+async function expireOverdueBookings() {
+  try {
+    await userPool.query(
+      `UPDATE bookings
+       SET status = 'expired', updated_at = now()
+       WHERE status IN ('pending','confirmed','in_progress')
+         AND return_at < now()`
+    );
+  } catch (err) {
+    console.error("Failed to expire overdue bookings:", err);
+  }
+}
+
 // Create a new booking
 export const createBooking = async (req: Request, res: Response) => {
-  const {
-    car_id,
-    user_id,
-    pickup_at,
-    return_at,
-  } = req.body;
+  const { car_id, user_id, pickup_at, return_at } = req.body;
 
   // Validate required fields
   if (!car_id || !user_id || !pickup_at || !return_at) {
@@ -113,6 +122,9 @@ export const getUserBookings = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
+    // Ensure overdue bookings are marked as expired
+    await expireOverdueBookings();
+
     // Get bookings from user database
     const { rows: bookings } = await userPool.query(
       `SELECT 
@@ -137,7 +149,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
     }
 
     // Get car details from cars database
-    const carIds = bookings.map(b => b.car_id);
+    const carIds = bookings.map((b) => b.car_id);
     const { rows: cars } = await pool.query(
       `SELECT id, make, model, year, img_path, car_location
        FROM cars
@@ -146,10 +158,10 @@ export const getUserBookings = async (req: Request, res: Response) => {
     );
 
     // Create a map of car details by id
-    const carsMap = new Map(cars.map(car => [car.id, car]));
+    const carsMap = new Map(cars.map((car) => [car.id, car]));
 
     // Combine booking and car data
-    const bookingsWithCarDetails = bookings.map(booking => {
+    const bookingsWithCarDetails = bookings.map((booking) => {
       const car = carsMap.get(booking.car_id) || {};
       return {
         ...booking,
@@ -173,6 +185,9 @@ export const getBookingById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
+    // Ensure overdue bookings are marked as expired
+    await expireOverdueBookings();
+
     // Get booking from user database
     const { rows: bookings } = await userPool.query(
       `SELECT 
@@ -236,6 +251,7 @@ export const updateBookingStatus = async (req: Request, res: Response) => {
     "in_progress",
     "returned",
     "canceled",
+    "expired",
   ];
 
   if (!status || !validStatuses.includes(status)) {
@@ -325,6 +341,9 @@ export const checkAvailability = async (req: Request, res: Response) => {
 // Get all active bookings (for filtering booked cars)
 export const getAllBookings = async (req: Request, res: Response) => {
   try {
+    // Ensure overdue bookings are marked as expired
+    await expireOverdueBookings();
+
     const { rows } = await userPool.query(
       `SELECT 
         id,

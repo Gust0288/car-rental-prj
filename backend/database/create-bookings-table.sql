@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   user_id             BIGINT NOT NULL, -- from users service
   pickup_at           TIMESTAMPTZ NOT NULL, -- store UTC
   return_at           TIMESTAMPTZ NOT NULL,
-  status              TEXT NOT NULL CHECK (status IN ('pending','confirmed','in_progress','returned','canceled')),
+  status              TEXT NOT NULL CHECK (status IN ('pending','confirmed','in_progress','returned','canceled', 'expired')),
   price_total         NUMERIC(10,2),
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -36,3 +36,8 @@ ALTER TABLE bookings
 
 -- Success message
 SELECT 'Bookings table created successfully!' AS message;
+
+ALTER TABLE bookings
+  DROP CONSTRAINT bookings_status_check,
+  ADD CONSTRAINT bookings_status_check
+    CHECK (status IN ('pending','confirmed','in_progress','returned','canceled','expired'));
