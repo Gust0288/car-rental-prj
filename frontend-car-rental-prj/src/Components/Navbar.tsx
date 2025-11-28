@@ -92,11 +92,8 @@ export const NavBar = () => {
     return location.pathname === path;
   };
 
-
   const isAdmin = user?.admin === 1;
   const effectiveIsAdmin = isAdmin;
-
-
 
   return (
     <Box
@@ -183,7 +180,12 @@ export const NavBar = () => {
               </Button>
             ) : null}
 
+<<<<<<< HEAD
             {(suggestionsLoading || (debouncedSearch && debouncedSearch.length > 0) || (suggestions && suggestions.length > 0)) && (
+=======
+            {(suggestionsLoading ||
+              (debouncedSearch && debouncedSearch.length > 0)) && (
+>>>>>>> be5acd0a5af97364aa67ed13e90c613db49347de
               <Box
                 position="absolute"
                 top="calc(100% + 6px)"
@@ -225,18 +227,29 @@ export const NavBar = () => {
                         >
                           <HStack gap={3}>
                             {c.img_path ? (
-                              <Image src={c.img_path} boxSize="48px" objectFit="cover" borderRadius="md" />
+                              <Image
+                                src={c.img_path}
+                                boxSize="48px"
+                                objectFit="cover"
+                                borderRadius="md"
+                              />
                             ) : null}
                             <Box>
-                              <Text fontWeight="semibold">{c.make} {c.model}</Text>
-                              <Text fontSize="sm" color="gray.600">{c.year || ''} · {c.car_location || ''}</Text>
+                              <Text fontWeight="semibold">
+                                {c.make} {c.model}
+                              </Text>
+                              <Text fontSize="sm" color="gray.600">
+                                {c.year || ""} · {c.car_location || ""}
+                              </Text>
                             </Box>
                           </HStack>
                         </Box>
                       ))
                     ) : (
                       <Box px={3} py={2}>
-                        <Text fontSize="sm" color="gray.600">No search results</Text>
+                        <Text fontSize="sm" color="gray.600">
+                          No search results
+                        </Text>
                       </Box>
                     )}
                   </Box>
@@ -267,16 +280,20 @@ export const NavBar = () => {
           >
             Cars
           </Button>
-          <Button
-            variant={isActivePath("/my-bookings") ? "solid" : "ghost"}
-            size="sm"
-            color={isActivePath("/my-bookings") ? "blue.500" : "white"}
-            bg={isActivePath("/my-bookings") ? "white" : "transparent"}
-            _hover={{ bg: isActivePath("/my-bookings") ? "gray.100" : "blue.600" }}
-            onClick={() => navigate("/my-bookings")}
-          >
-            My Bookings
-          </Button>
+          {isLoggedIn && (
+            <Button
+              variant={isActivePath("/my-bookings") ? "solid" : "ghost"}
+              size="sm"
+              color={isActivePath("/my-bookings") ? "blue.500" : "white"}
+              bg={isActivePath("/my-bookings") ? "white" : "transparent"}
+              _hover={{
+                bg: isActivePath("/my-bookings") ? "gray.100" : "blue.600",
+              }}
+              onClick={() => navigate("/my-bookings")}
+            >
+              My Bookings
+            </Button>
+          )}
           {isLoggedIn && user ? (
             <>
               <Button
@@ -284,7 +301,9 @@ export const NavBar = () => {
                 size="sm"
                 color={isActivePath("/profile") ? "blue.500" : "white"}
                 bg={isActivePath("/profile") ? "white" : "transparent"}
-                _hover={{ bg: isActivePath("/profile") ? "gray.100" : "blue.600" }}
+                _hover={{
+                  bg: isActivePath("/profile") ? "gray.100" : "blue.600",
+                }}
                 onClick={() => navigate("/profile")}
               >
                 Profile
@@ -295,7 +314,9 @@ export const NavBar = () => {
                   size="sm"
                   color={isActivePath("/admin") ? "blue.500" : "white"}
                   bg={isActivePath("/admin") ? "white" : "transparent"}
-                  _hover={{ bg: isActivePath("/admin") ? "gray.100" : "blue.600" }}
+                  _hover={{
+                    bg: isActivePath("/admin") ? "gray.100" : "blue.600",
+                  }}
                   onClick={() => navigate("/admin")}
                 >
                   Admin
@@ -320,7 +341,9 @@ export const NavBar = () => {
                 size="sm"
                 color={isActivePath("/login") ? "blue.500" : "white"}
                 bg={isActivePath("/login") ? "white" : "transparent"}
-                _hover={{ bg: isActivePath("/login") ? "gray.100" : "blue.600" }}
+                _hover={{
+                  bg: isActivePath("/login") ? "gray.100" : "blue.600",
+                }}
                 onClick={() => navigate("/login")}
               >
                 Login
@@ -330,7 +353,9 @@ export const NavBar = () => {
                 size="sm"
                 color={isActivePath("/signup") ? "blue.500" : "white"}
                 bg={isActivePath("/signup") ? "white" : "transparent"}
-                _hover={{ bg: isActivePath("/signup") ? "gray.100" : "blue.600" }}
+                _hover={{
+                  bg: isActivePath("/signup") ? "gray.100" : "blue.600",
+                }}
                 onClick={() => navigate("/signup")}
               >
                 Sign Up
@@ -431,7 +456,9 @@ export const NavBar = () => {
               width="100%"
               justifyContent="center"
               borderWidth="1px"
-              _hover={{ bg: isActivePath("/my-bookings") ? "blue.600" : "blue.50" }}
+              _hover={{
+                bg: isActivePath("/my-bookings") ? "blue.600" : "blue.50",
+              }}
               size="md"
               fontSize="md"
               fontWeight="medium"
@@ -451,7 +478,9 @@ export const NavBar = () => {
                   width="100%"
                   justifyContent="center"
                   borderWidth="1px"
-                  _hover={{ bg: isActivePath("/profile") ? "blue.600" : "blue.50" }}
+                  _hover={{
+                    bg: isActivePath("/profile") ? "blue.600" : "blue.50",
+                  }}
                   size="md"
                   fontSize="md"
                   fontWeight="medium"
@@ -470,7 +499,9 @@ export const NavBar = () => {
                     width="100%"
                     justifyContent="center"
                     borderWidth="1px"
-                    _hover={{ bg: isActivePath("/admin") ? "blue.600" : "blue.50" }}
+                    _hover={{
+                      bg: isActivePath("/admin") ? "blue.600" : "blue.50",
+                    }}
                     size="md"
                     fontSize="md"
                     fontWeight="medium"
@@ -508,7 +539,9 @@ export const NavBar = () => {
                   width="100%"
                   justifyContent="center"
                   borderWidth="1px"
-                  _hover={{ bg: isActivePath("/login") ? "blue.600" : "blue.50" }}
+                  _hover={{
+                    bg: isActivePath("/login") ? "blue.600" : "blue.50",
+                  }}
                   size="md"
                   fontSize="md"
                   fontWeight="medium"

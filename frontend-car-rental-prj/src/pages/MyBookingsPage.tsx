@@ -29,9 +29,10 @@ const locationNames: Record<string, string> = {
 const statusStyles: Record<UserBooking["status"], { bg: string }> = {
   pending: { bg: "yellow.100" },
   confirmed: { bg: "green.100" },
-  in_progress: { bg: "blue.100"},
-  returned: { bg: "purple.100"},
-  canceled: { bg: "red.100"},
+  in_progress: { bg: "blue.100" },
+  returned: { bg: "purple.100" },
+  canceled: { bg: "red.100" },
+  expired: { bg: "red.100" },
 };
 
 const formatDate = (date: string) => {
@@ -97,7 +98,8 @@ const MyBookingsPage = () => {
             My Bookings
           </Heading>
           <Text color="gray.600">
-            Review your upcoming and past reservations. You can always view a booking for full details.
+            Review your upcoming and past reservations. You can always view a
+            booking for full details.
           </Text>
         </Box>
 
@@ -158,7 +160,9 @@ const MyBookingsPage = () => {
                         Booking #{booking.id}
                       </Text>
                       <Heading size="md" color="gray.800">
-                        {booking.make ? `${booking.make} ${booking.model}` : "Car"}
+                        {booking.make
+                          ? `${booking.make} ${booking.model}`
+                          : "Car"}
                       </Heading>
                       {booking.year && (
                         <Text color="gray.600" fontSize="sm">
@@ -181,7 +185,10 @@ const MyBookingsPage = () => {
                   {booking.img_path && (
                     <Image
                       src={booking.img_path}
-                      alt={`${booking.make ?? ""} ${booking.model ?? ""}`.trim() || "Booked car"}
+                      alt={
+                        `${booking.make ?? ""} ${booking.model ?? ""}`.trim() ||
+                        "Booked car"
+                      }
                       borderRadius="md"
                       height="160px"
                       objectFit="cover"
@@ -194,13 +201,17 @@ const MyBookingsPage = () => {
                         <FiCalendar />
                         <Text>Pickup</Text>
                       </HStack>
-                        <Text color="gray.700" mt={1}>
-                          {formatDate(booking.pickup_at)}
+                      <Text color="gray.700" mt={1}>
+                        {formatDate(booking.pickup_at)}
+                      </Text>
+                      <HStack color="gray.600" fontSize="sm" mt={1}>
+                        <FiMapPin />
+                        <Text>
+                          {locationNames[booking.car_location ?? ""] ??
+                            booking.car_location ??
+                            "N/A"}
                         </Text>
-                        <HStack color="gray.600" fontSize="sm" mt={1}>
-                          <FiMapPin />
-                          <Text>{locationNames[booking.car_location ?? ""] ?? booking.car_location ?? "N/A"}</Text>
-                        </HStack>
+                      </HStack>
                     </Box>
 
                     <Separator />
@@ -215,16 +226,23 @@ const MyBookingsPage = () => {
                       </Text>
                       <HStack color="gray.600" fontSize="sm" mt={1}>
                         <FiMapPin />
-                        <Text>{locationNames[booking.car_location ?? ""] ?? booking.car_location ?? "N/A"}</Text>
+                        <Text>
+                          {locationNames[booking.car_location ?? ""] ??
+                            booking.car_location ??
+                            "N/A"}
+                        </Text>
                       </HStack>
                     </Box>
                   </VStack>
 
                   <HStack justify="space-between" pt={2}>
                     <Text fontWeight="bold" color="gray.800">
-                      Total: {(() => {
+                      Total:{" "}
+                      {(() => {
                         const amt = Number(booking.price_total);
-                        return Number.isFinite(amt) ? `${amt.toFixed(2)} DKK` : "--";
+                        return Number.isFinite(amt)
+                          ? `${amt.toFixed(2)} DKK`
+                          : "--";
                       })()}
                     </Text>
                     <Button
@@ -254,7 +272,8 @@ const MyBookingsPage = () => {
               </Box>
               <Heading size="md">No bookings yet</Heading>
               <Text color="gray.600" maxW="md">
-                You have not made any bookings yet. Browse our selection of cars and reserve the perfect ride for your next trip.
+                You have not made any bookings yet. Browse our selection of cars
+                and reserve the perfect ride for your next trip.
               </Text>
               <Button variant="primary" onClick={() => navigate("/cars")}>
                 Browse Cars
