@@ -283,26 +283,29 @@ const MyBookingsPage = () => {
                           : "--";
                       })()}
                     </Text>
-                    <HStack gap={2}>
-                      <Button
-                        variant="primary"
-                        onClick={() => navigate(`/bookings/${booking.id}`)}
-                        size="sm"
-                        flex={1}
-                      >
-                        View Details
-                      </Button>
-                      {(booking.status === "pending" || booking.status === "confirmed") && (
+                    <HStack gap={2} width="100%">
+                      <Box flex={1}>
                         <Button
-                          onClick={() => handleCancelBooking(booking.id)}
+                          variant="primary"
+                          onClick={() => navigate(`/bookings/${booking.id}`)}
                           size="sm"
-                          flex={1}
-                          disabled={cancelingBookingId === booking.id}
-                          colorScheme="red"
-                          variant="outline"
+                          fullWidth
                         >
-                          {cancelingBookingId === booking.id ? "Canceling..." : "Cancel"}
+                          View Details
                         </Button>
+                      </Box>
+                      {(booking.status === "pending" || booking.status === "confirmed") && (
+                        <Box flex={1}>
+                          <Button
+                            variant="danger"
+                            onClick={() => handleCancelBooking(booking.id)}
+                            size="sm"
+                            disabled={cancelingBookingId === booking.id}
+                            fullWidth
+                          >
+                            {cancelingBookingId === booking.id ? "Canceling..." : "Cancel"}
+                          </Button>
+                        </Box>
                       )}
                     </HStack>
                   </VStack>
