@@ -8,5 +8,5 @@ CREATE TABLE users (
     user_created_at  TIMESTAMPTZ NOT NULL,
     user_updated_at  TIMESTAMPTZ,
     user_deleted_at  TIMESTAMPTZ,
-    is_admin         SMALLINT NOT NULL DEFAULT 0
+    admin         SMALLINT NOT NULL DEFAULT 0
 );
