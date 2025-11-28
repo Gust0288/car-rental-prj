@@ -19,7 +19,7 @@ import {
   FiMapPin,
   FiCreditCard,
 } from "react-icons/fi";
-import { Button } from "../Components/Button";
+import { Button } from "../components/Button";
 import { httpClient } from "../services/httpClient";
 
 interface Booking {
