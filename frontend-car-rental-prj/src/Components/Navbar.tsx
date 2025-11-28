@@ -180,12 +180,8 @@ export const NavBar = () => {
               </Button>
             ) : null}
 
-<<<<<<< HEAD
-            {(suggestionsLoading || (debouncedSearch && debouncedSearch.length > 0) || (suggestions && suggestions.length > 0)) && (
-=======
             {(suggestionsLoading ||
               (debouncedSearch && debouncedSearch.length > 0)) && (
->>>>>>> be5acd0a5af97364aa67ed13e90c613db49347de
               <Box
                 position="absolute"
                 top="calc(100% + 6px)"
