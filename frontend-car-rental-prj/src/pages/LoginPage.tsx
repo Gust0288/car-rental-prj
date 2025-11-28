@@ -71,10 +71,9 @@ const LoginPage = () => {
 
         // Get redirect URL from query params or default to profile
         const redirectTo = searchParams.get("redirect") || NAVIGATION_CONFIG.defaultRedirect;
-
-        setTimeout(() => {
-          navigate(redirectTo);
-        }, NAVIGATION_CONFIG.redirectDelay);
+        
+        // Navigate immediately so error messages stay visible when login fails
+        navigate(redirectTo);
       }
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
@@ -92,7 +91,7 @@ const LoginPage = () => {
         title: "Login failed",
         description: errorMessage,
         type: "error",
-        duration: TOAST_DURATIONS.short
+        duration: 100000
       });
     } finally {
       setIsLoading(false);
