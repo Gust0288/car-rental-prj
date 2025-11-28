@@ -118,7 +118,7 @@ BEGIN
       )
       WHERE (status IN ('pending','confirmed','in_progress'));
   END IF;
-END$$;
+END $$;
 
 COMMIT;
 
