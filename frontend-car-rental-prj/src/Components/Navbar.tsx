@@ -164,7 +164,7 @@ export const NavBar = () => {
               </Button>
             ) : null}
 
-            {(suggestionsLoading || (suggestions && suggestions.length > 0)) && (
+            {(suggestionsLoading || (debouncedSearch && debouncedSearch.length > 0)) && (
               <Box
                 position="absolute"
                 top="calc(100% + 6px)"
@@ -186,13 +186,14 @@ export const NavBar = () => {
                   </HStack>
                 ) : (
                   <Box>
-                    {suggestions.map((c) => (
-                      <Box
-                        key={c.id}
-                        _hover={{ bg: "gray.50" }}
-                        cursor="pointer"
-                        px={3}
-                        py={2}
+                    {suggestions && suggestions.length > 0 ? (
+                      suggestions.map((c) => (
+                        <Box
+                          key={c.id}
+                          _hover={{ bg: "gray.50" }}
+                          cursor="pointer"
+                          px={3}
+                          py={2}
                           onClick={() => {
                             // prevent the debounced search effect from forcing a
                             // navigation back to /cars (debouncedSearch may still
@@ -202,18 +203,23 @@ export const NavBar = () => {
                             setSuggestions([]);
                             navigate(`/car/${c.id}`);
                           }}
-                      >
-                        <HStack gap={3}>
-                          {c.img_path ? (
-                            <Image src={c.img_path} boxSize="48px" objectFit="cover" borderRadius="md" />
-                          ) : null}
-                          <Box>
-                            <Text fontWeight="semibold">{c.make} {c.model}</Text>
-                            <Text fontSize="sm" color="gray.600">{c.year || ''} · {c.car_location || ''}</Text>
-                          </Box>
-                        </HStack>
+                        >
+                          <HStack gap={3}>
+                            {c.img_path ? (
+                              <Image src={c.img_path} boxSize="48px" objectFit="cover" borderRadius="md" />
+                            ) : null}
+                            <Box>
+                              <Text fontWeight="semibold">{c.make} {c.model}</Text>
+                              <Text fontSize="sm" color="gray.600">{c.year || ''} · {c.car_location || ''}</Text>
+                            </Box>
+                          </HStack>
+                        </Box>
+                      ))
+                    ) : (
+                      <Box px={3} py={2}>
+                        <Text fontSize="sm" color="gray.600">No search results</Text>
                       </Box>
-                    ))}
+                    )}
                   </Box>
                 )}
               </Box>
