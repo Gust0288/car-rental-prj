@@ -17,7 +17,7 @@ import { FiCalendar, FiMapPin, FiAlertCircle } from "react-icons/fi";
 import { useUser } from "../context/UserContext";
 import { Button } from "../components/Button";
 import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader";
-import { getUserBookings, type UserBooking } from "../services/bookings";
+import { getUserBookings, cancelBooking, type UserBooking } from "../services/bookings";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 
 const locationNames: Record<string, string> = {
@@ -54,6 +54,7 @@ const MyBookingsPage = () => {
   const [bookings, setBookings] = useState<UserBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancelingBookingId, setCancelingBookingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -85,6 +86,43 @@ const MyBookingsPage = () => {
   }, [user]);
 
   const hasBookings = useMemo(() => bookings.length > 0, [bookings]);
+
+  const handleCancelBooking = async (bookingId: number) => {
+    if (!window.confirm("Are you sure you want to cancel this booking?")) {
+      return;
+    }
+
+    try {
+      setCancelingBookingId(bookingId);
+      await cancelBooking(bookingId);
+      
+      // Update the booking status in the local state
+      setBookings(prevBookings =>
+        prevBookings.map(booking =>
+          booking.id === bookingId
+            ? { ...booking, status: "canceled" as const }
+            : booking
+        )
+      );
+
+      toaster.create({
+        title: "Booking canceled",
+        description: "Your booking has been successfully canceled.",
+        type: "success",
+        duration: TOAST_DURATIONS.medium,
+      });
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
+      toaster.create({
+        title: "Error",
+        description: "Failed to cancel booking. Please try again.",
+        type: "error",
+        duration: TOAST_DURATIONS.medium,
+      });
+    } finally {
+      setCancelingBookingId(null);
+    }
+  };
 
   if (!user) {
     return <BookingsSkeletonLoader count={3} />;
@@ -235,7 +273,7 @@ const MyBookingsPage = () => {
                     </Box>
                   </VStack>
 
-                  <HStack justify="space-between" pt={2}>
+                  <VStack align="stretch" pt={2} gap={3}>
                     <Text fontWeight="bold" color="gray.800">
                       Total:{" "}
                       {(() => {
@@ -245,14 +283,29 @@ const MyBookingsPage = () => {
                           : "--";
                       })()}
                     </Text>
-                    <Button
-                      variant="primary"
-                      onClick={() => navigate(`/bookings/${booking.id}`)}
-                      size="sm"
-                    >
-                      View Details
-                    </Button>
-                  </HStack>
+                    <HStack gap={2}>
+                      <Button
+                        variant="primary"
+                        onClick={() => navigate(`/bookings/${booking.id}`)}
+                        size="sm"
+                        flex={1}
+                      >
+                        View Details
+                      </Button>
+                      {(booking.status === "pending" || booking.status === "confirmed") && (
+                        <Button
+                          onClick={() => handleCancelBooking(booking.id)}
+                          size="sm"
+                          flex={1}
+                          disabled={cancelingBookingId === booking.id}
+                          colorScheme="red"
+                          variant="outline"
+                        >
+                          {cancelingBookingId === booking.id ? "Canceling..." : "Cancel"}
+                        </Button>
+                      )}
+                    </HStack>
+                  </VStack>
                 </VStack>
               </Box>
             ))}
