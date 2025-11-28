@@ -2,6 +2,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
 import { authService } from "../services/api-client";
@@ -30,6 +31,44 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+/**
+ * Normalizes the admin field to a numeric value (0 or 1)
+ */
+const normalizeAdminValue = (adminValue: unknown): number => {
+  if (adminValue === true || adminValue === 1) return 1;
+  if (adminValue === false || adminValue === 0) return 0;
+  
+  if (typeof adminValue === "string") {
+    const normalizedString = adminValue.toLowerCase().trim();
+    if (["1", "true", "t", "yes"].includes(normalizedString)) return 1;
+  }
+  
+  return 0;
+};
+
+/**
+ * Normalizes a user object by ensuring the admin field is a numeric value
+ */
+const normalizeUserData = (userData: User): User => {
+  const rawAdminValue = (userData as unknown as Record<string, unknown>)["admin"];
+  return {
+    ...userData,
+    admin: normalizeAdminValue(rawAdminValue),
+  };
+};
+
+
+const saveToLocalStorage = (userData: User, authToken: string): void => {
+  localStorage.setItem("user", JSON.stringify(userData));
+  localStorage.setItem("token", authToken);
+};
+
+
+const clearLocalStorage = (): void => {
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+};
+
 export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -37,93 +76,57 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const [token, setToken] = useState<string | null>(null);
 
   const login = (loginData: LoginResponse) => {
-    // Normalize admin to numeric 0/1 for consistent client-side checks
-    const normalizedUser = { ...loginData.user } as User;
-    const rawAdmin = ((loginData.user as unknown) as Record<string, unknown>)[
-      "admin"
-    ];
-    let adminVal = 0;
-    if (rawAdmin === true) adminVal = 1;
-    else if (typeof rawAdmin === "number") adminVal = rawAdmin;
-    else if (typeof rawAdmin === "string") {
-      const s = rawAdmin.toLowerCase();
-      if (s === "1" || s === "true" || s === "t" || s === "yes") adminVal = 1;
-    }
-    normalizedUser.admin = adminVal;
+    const normalizedUser = normalizeUserData(loginData.user);
     setUser(normalizedUser);
     setToken(loginData.token);
-    localStorage.setItem("user", JSON.stringify(normalizedUser));
-    localStorage.setItem("token", loginData.token);
+    saveToLocalStorage(normalizedUser, loginData.token);
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    clearLocalStorage();
   };
 
-  // Check localStorage on initial load
-  React.useEffect(() => {
+  // Initialize user from localStorage and refresh from server
+  useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
 
-    if (storedUser && storedToken) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        // Normalize admin value to numeric 0/1 if present
-        if (parsed) {
-          const rawAdmin = parsed?.admin;
-          let adminVal = 0;
-          if (rawAdmin === true) adminVal = 1;
-          else if (typeof rawAdmin === "number") adminVal = rawAdmin;
-          else if (typeof rawAdmin === "string") {
-            const s = rawAdmin.toLowerCase();
-            if (s === "1" || s === "true" || s === "t" || s === "yes") adminVal = 1;
-          }
-          parsed.admin = adminVal;
-        }
-        setUser(parsed);
-        setToken(storedToken);
+    if (!storedUser || !storedToken) return;
 
-        // If we have a token and an id, fetch a fresh profile from the server
-        // to ensure fields like `admin` are up-to-date (helps when server-side
-        // encoding differs or older localStorage lacks admin).
-        (async () => {
-          try {
-            const pid = parsed?.id;
-            if (pid && storedToken) {
-              const resp = await authService.getProfile(pid as number);
-              if (resp?.data) {
-                const serverUser = resp.data;
-                // normalize admin
-                const rawAdmin = ((serverUser as unknown) as Record<string, unknown>)[
-                  "admin"
-                ];
-                let adminVal = 0;
-                if (rawAdmin === true) adminVal = 1;
-                else if (typeof rawAdmin === "number") adminVal = rawAdmin;
-                else if (typeof rawAdmin === "string") {
-                  const s = rawAdmin.toLowerCase();
-                  if (s === "1" || s === "true" || s === "t" || s === "yes") adminVal = 1;
-                }
-                serverUser.admin = adminVal;
-                setUser(serverUser);
-                localStorage.setItem("user", JSON.stringify(serverUser));
-              }
-            }
-          } catch {
-            // ignore profile refresh errors silently
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      const normalizedUser = normalizeUserData(parsedUser);
+      
+      setUser(normalizedUser);
+      setToken(storedToken);
+
+      // Fetch fresh profile from server to ensure data is up-to-date
+      const refreshUserProfile = async () => {
+        try {
+          const profileId = normalizedUser.id;
+          if (!profileId) return;
+
+          const profileResponse = await authService.getProfile(profileId);
+          if (profileResponse?.data) {
+            const freshUserData = normalizeUserData(profileResponse.data);
+            setUser(freshUserData);
+            saveToLocalStorage(freshUserData, storedToken);
           }
-        })();
-      } catch {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
+        } catch (error) {
+          console.debug("Failed to refresh user profile:", error);
+        }
+      };
+
+      refreshUserProfile();
+    } catch (error) {
+      console.error("Failed to parse stored user data:", error);
+      clearLocalStorage();
     }
   }, []);
 
-  const value = {
+  const contextValue = {
     user,
     token,
     login,
@@ -131,7 +134,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     isLoggedIn: !!user,
   };
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => {

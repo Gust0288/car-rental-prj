@@ -7,7 +7,7 @@ export const getAllCars = async (req: Request, res: Response) => {
     logger.info("Fetching all cars");
 
     const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
-    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
+    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 1000;
     const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : 0;
 
     let baseQuery = `SELECT id, make, model, year, class, city_mpg, highway_mpg, 

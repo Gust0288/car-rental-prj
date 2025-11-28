@@ -33,32 +33,17 @@ export const NavBar = () => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const suppressNavRef = useRef(false);
   useEffect(() => {
-    // Only navigate when the user has actually typed something (non-empty),
-    // or when we are already on /cars and need to clear an existing search
-    // query. This avoids forcing the app to `/cars` on initial mount.
+    // Only auto-clear the URL when the input becomes empty while on /cars
+    // (we navigate to /cars to remove the query string). We DO NOT navigate
+    // on debounced changes anymore — navigation happens only on Enter or
+    // when the user clicks a suggestion.
     try {
       const onCarsPath = location.pathname.startsWith("/cars");
 
-      if (suppressNavRef.current) {
-        suppressNavRef.current = false;
-        return;
-      }
-
-      if (debouncedSearch && debouncedSearch.length > 0) {
-        // navigate when the user explicitly presses Enter or clicks a result.
-        // keep showing suggestions (but also update URL when user expects it)
-        navigate(`/cars?search=${encodeURIComponent(debouncedSearch)}`);
-        return;
-      }
-
-      // If the debounced search is empty, only navigate to `/cars` to clear
-      // an existing query string when we're already on the cars page and
-      // there is a search param present.
       if (debouncedSearch === "" && onCarsPath && location.search) {
         navigate(`/cars`);
       }
     } catch (e) {
-      // defensive: don't let navigation errors lock the app
       console.error("Navbar search navigation error:", e);
     }
   }, [debouncedSearch, navigate, location.pathname, location.search]);
@@ -127,7 +112,13 @@ export const NavBar = () => {
         mx="auto"
         display={{ base: "none", md: "flex" }}
       >
-        <Text fontSize="xl" fontWeight="bold" color="white">
+        <Text 
+          fontSize="xl" 
+          fontWeight="bold" 
+          color="white"
+          cursor="pointer"
+          onClick={() => navigate('/')}
+        >
           Car Rental
         </Text>
         {/* debug badge removed */}
@@ -139,6 +130,26 @@ export const NavBar = () => {
               bg="white"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter") {
+                  try {
+                    const trimmed = search.trim();
+                    if (trimmed.length > 0) {
+                      navigate(`/cars?search=${encodeURIComponent(trimmed)}`);
+                      setSuggestions([]);
+                      // blur input to close mobile keyboard / indicate completion
+                      (e.target as HTMLInputElement).blur();
+                    } else {
+                      // if empty and we're on /cars with a query, clear it
+                      if (location.pathname.startsWith("/cars") && location.search) {
+                        navigate(`/cars`);
+                      }
+                    }
+                  } catch (err) {
+                    console.error("Navbar Enter navigation error:", err);
+                  }
+                }
+              }}
               aria-label="Search cars"
               size="sm"
               pr="3rem"
@@ -349,7 +360,13 @@ export const NavBar = () => {
         width="100%"
         display={{ base: "flex", md: "none" }}
       >
-        <Text fontSize="lg" fontWeight="bold" color="white">
+        <Text 
+          fontSize="lg" 
+          fontWeight="bold" 
+          color="white"
+          cursor="pointer"
+          onClick={() => navigate('/')}
+        >
           Car Rental
         </Text>
 

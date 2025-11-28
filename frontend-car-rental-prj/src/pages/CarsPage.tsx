@@ -50,9 +50,12 @@ export default function CarsPage() {
   const [isVehicleSpecsExpanded, setIsVehicleSpecsExpanded] = useState(true);
 
   useEffect(() => {
+    const search = searchParams.get("search") || "";
+
+    setLoading(true);
     Promise.all([
-      getCars(),
-      getBookedCarIds()
+      getCars(search || undefined, 200),
+      getBookedCarIds(),
     ])
       .then(([carsData, bookedIds]) => {
         console.log("Cars loaded:", carsData.length);
@@ -67,21 +70,10 @@ export default function CarsPage() {
         );
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [searchParams]);
 
 
-  // Remove duplicates based on make and model combination
-  const removeDuplicateCars = (cars: Car[]) => {
-    const seen = new Set<string>();
-    return cars.filter(car => {
-      const key = `${car.make}-${car.model}`;
-      if (seen.has(key)) {
-        return false;
-      }
-      seen.add(key);
-      return true;
-    });
-  };
+  // (previous deduplication removed) — we operate on full rows from the API
 
   // Capitalize first letter of each word
   const capitalizeString = (str: string) => {
@@ -163,7 +155,8 @@ export default function CarsPage() {
     return filtered;
   };
 
-  const uniqueCars = removeDuplicateCars(cars);
+  // Show full rows returned from the API (do not collapse by make+model)
+  const uniqueCars = cars;
   const filteredCars = applyFilters(uniqueCars);
   const groupedCars = groupCarsByMake(filteredCars);
 
@@ -487,7 +480,7 @@ export default function CarsPage() {
             <HStack justify="space-between" flexWrap="wrap" gap={4}>
               <HStack gap={4} flexWrap="wrap">
                 <Text fontSize="md" fontWeight="semibold" color="gray.700">
-                  Showing <Text as="span" color="blue.600">{filteredCars.length}</Text> of {uniqueCars.length} cars
+                  Showing <Text as="span" color="blue.600">{filteredCars.length}</Text> of {cars.length} cars
                 </Text>
               </HStack>
               
