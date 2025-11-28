@@ -133,15 +133,23 @@ export const NavBar = () => {
               bg="white"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              onKeyDown={async (e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (e.key === "Enter") {
                   try {
                     const trimmed = search.trim();
                     if (trimmed.length > 0) {
-                      navigate(`/cars?search=${encodeURIComponent(trimmed)}`);
-                      setSuggestions([]);
-                      // blur input to close mobile keyboard / indicate completion
-                      (e.target as HTMLInputElement).blur();
+                      // Fetch suggestions (show in dropdown) instead of navigating
+                      setSuggestionsLoading(true);
+                      try {
+                        const resp = await carService.getAllCars(trimmed, 10);
+                        const data = resp?.data || [];
+                        setSuggestions(data as Car[]);
+                      } catch (fetchErr) {
+                        console.error("Search fetch error:", fetchErr);
+                        setSuggestions([]);
+                      } finally {
+                        setSuggestionsLoading(false);
+                      }
                     } else {
                       // if empty and we're on /cars with a query, clear it
                       if (location.pathname.startsWith("/cars") && location.search) {
@@ -149,7 +157,7 @@ export const NavBar = () => {
                       }
                     }
                   } catch (err) {
-                    console.error("Navbar Enter navigation error:", err);
+                    console.error("Navbar Enter error:", err);
                   }
                 }
               }}
@@ -175,7 +183,7 @@ export const NavBar = () => {
               </Button>
             ) : null}
 
-            {(suggestionsLoading || (debouncedSearch && debouncedSearch.length > 0)) && (
+            {(suggestionsLoading || (debouncedSearch && debouncedSearch.length > 0) || (suggestions && suggestions.length > 0)) && (
               <Box
                 position="absolute"
                 top="calc(100% + 6px)"
