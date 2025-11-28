@@ -130,7 +130,13 @@ export const NavBar = () => {
         mx="auto"
         display={{ base: "none", md: "flex" }}
       >
-        <Text fontSize="xl" fontWeight="bold" color="white">
+        <Text 
+          fontSize="xl" 
+          fontWeight="bold" 
+          color="white"
+          cursor="pointer"
+          onClick={() => navigate('/')}
+        >
           Car Rental
         </Text>
         {/* debug badge removed */}
@@ -328,7 +334,13 @@ export const NavBar = () => {
         width="100%"
         display={{ base: "flex", md: "none" }}
       >
-        <Text fontSize="lg" fontWeight="bold" color="white">
+        <Text 
+          fontSize="lg" 
+          fontWeight="bold" 
+          color="white"
+          cursor="pointer"
+          onClick={() => navigate('/')}
+        >
           Car Rental
         </Text>
 
