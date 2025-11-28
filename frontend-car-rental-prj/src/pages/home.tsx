@@ -17,7 +17,7 @@ import {
   NativeSelectRoot,
 } from "@chakra-ui/react/native-select";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/Button";
+import { Button } from "../components/Button.tsx";
 import { getCars, type Car } from "../services/cars";
 import { useUser } from "../context/UserContext";
 

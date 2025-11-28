@@ -15,9 +15,13 @@ import {
 import { Separator } from "@chakra-ui/react/separator";
 import { FiCalendar, FiMapPin, FiAlertCircle } from "react-icons/fi";
 import { useUser } from "../context/UserContext";
-import { Button } from "../components/Button";
-import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader";
-import { getUserBookings, cancelBooking, type UserBooking } from "../services/bookings";
+import { Button } from "../components/Button.tsx";
+import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader.tsx";
+import {
+  getUserBookings,
+  cancelBooking,
+  type UserBooking,
+} from "../services/bookings";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 
 const locationNames: Record<string, string> = {
@@ -54,7 +58,9 @@ const MyBookingsPage = () => {
   const [bookings, setBookings] = useState<UserBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cancelingBookingId, setCancelingBookingId] = useState<number | null>(null);
+  const [cancelingBookingId, setCancelingBookingId] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     if (!user) {
@@ -95,10 +101,10 @@ const MyBookingsPage = () => {
     try {
       setCancelingBookingId(bookingId);
       await cancelBooking(bookingId);
-      
+
       // Update the booking status in the local state
-      setBookings(prevBookings =>
-        prevBookings.map(booking =>
+      setBookings((prevBookings) =>
+        prevBookings.map((booking) =>
           booking.id === bookingId
             ? { ...booking, status: "canceled" as const }
             : booking
@@ -294,7 +300,8 @@ const MyBookingsPage = () => {
                           View Details
                         </Button>
                       </Box>
-                      {(booking.status === "pending" || booking.status === "confirmed") && (
+                      {(booking.status === "pending" ||
+                        booking.status === "confirmed") && (
                         <Box flex={1}>
                           <Button
                             variant="danger"
@@ -303,7 +310,9 @@ const MyBookingsPage = () => {
                             disabled={cancelingBookingId === booking.id}
                             fullWidth
                           >
-                            {cancelingBookingId === booking.id ? "Canceling..." : "Cancel"}
+                            {cancelingBookingId === booking.id
+                              ? "Canceling..."
+                              : "Cancel"}
                           </Button>
                         </Box>
                       )}
