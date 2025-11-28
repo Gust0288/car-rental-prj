@@ -95,3 +95,15 @@ export async function getUserBookings(userId: number): Promise<UserBooking[]> {
     throw error;
   }
 }
+
+export async function cancelBooking(bookingId: number): Promise<Booking> {
+  try {
+    const { data } = await httpClient.patch<Booking>(
+      `/bookings/${bookingId}/cancel`
+    );
+    return data;
+  } catch (error) {
+    console.error("Failed to cancel booking:", error);
+    throw error;
+  }
+}
