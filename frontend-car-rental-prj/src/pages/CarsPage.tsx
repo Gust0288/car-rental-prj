@@ -487,7 +487,7 @@ export default function CarsPage() {
             <HStack justify="space-between" flexWrap="wrap" gap={4}>
               <HStack gap={4} flexWrap="wrap">
                 <Text fontSize="md" fontWeight="semibold" color="gray.700">
-                  Showing <Text as="span" color="blue.600">{filteredCars.length}</Text> of {uniqueCars.length} cars
+                  Showing <Text as="span" color="blue.600">{filteredCars.length}</Text> of {cars.length} cars
                 </Text>
               </HStack>
               
