@@ -6,7 +6,13 @@ export type Booking = {
   user_id: number;
   pickup_at: string;
   return_at: string;
-  status: 'pending' | 'confirmed' | 'in_progress' | 'returned' | 'canceled';
+  status:
+    | "pending"
+    | "confirmed"
+    | "in_progress"
+    | "returned"
+    | "canceled"
+    | "expired";
   price_total?: number;
   created_at: string;
   updated_at: string;
@@ -26,24 +32,28 @@ export async function getBookedCarIds(): Promise<number[]> {
     // For now, we'll need to implement an endpoint that returns just booked car IDs
     // or we filter from all bookings
     const { data } = await httpClient.get<Booking[]>("/bookings");
-    
+
     console.log("Raw bookings data:", data);
-    
+
     // Filter active bookings (not canceled or returned)
-    const activeStatuses = ['pending', 'confirmed', 'in_progress'];
-    const activeBookings = data.filter(booking => activeStatuses.includes(booking.status));
-    
+    const activeStatuses = ["pending", "confirmed", "in_progress"];
+    const activeBookings = data.filter((booking) =>
+      activeStatuses.includes(booking.status)
+    );
+
     console.log("Active bookings:", activeBookings);
-    
+
     // Convert car_id to number to ensure type consistency
-    const bookedCarIds = activeBookings.map(booking => Number(booking.car_id));
-    
+    const bookedCarIds = activeBookings.map((booking) =>
+      Number(booking.car_id)
+    );
+
     console.log("Booked car IDs (with duplicates):", bookedCarIds);
-    
+
     // Return unique car IDs
     const uniqueIds = [...new Set(bookedCarIds)];
     console.log("Unique booked car IDs:", uniqueIds);
-    
+
     return uniqueIds;
   } catch (error) {
     console.error("Failed to fetch booked cars:", error);
@@ -76,7 +86,9 @@ export async function checkCarAvailability(
 
 export async function getUserBookings(userId: number): Promise<UserBooking[]> {
   try {
-    const { data } = await httpClient.get<UserBooking[]>(`/bookings/user/${userId}`);
+    const { data } = await httpClient.get<UserBooking[]>(
+      `/bookings/user/${userId}`
+    );
     return data;
   } catch (error) {
     console.error("Failed to fetch user bookings:", error);

@@ -12,13 +12,18 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { Field as ChakraField } from "@chakra-ui/react/field";
-import { NativeSelectField, NativeSelectRoot } from "@chakra-ui/react/native-select";
+import {
+  NativeSelectField,
+  NativeSelectRoot,
+} from "@chakra-ui/react/native-select";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/Button";
 import { getCars, type Car } from "../services/cars";
+import { useUser } from "../context/UserContext";
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isLoggedIn } = useUser();
   const [pickupLocation, setPickupLocation] = useState("");
   const [pickupAt, setPickupAt] = useState(
     new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
@@ -30,25 +35,36 @@ export default function Home() {
 
   // Fetch cars and extract unique locations
   useEffect(() => {
-    getCars().then((cars: Car[]) => {
-      const uniqueLocations = [...new Set(cars.map(car => car.car_location).filter(Boolean))].sort();
-      setLocations(uniqueLocations as string[]);
-    }).catch(err => {
-      console.error("Failed to fetch locations:", err);
-    });
+    getCars()
+      .then((cars: Car[]) => {
+        const uniqueLocations = [
+          ...new Set(cars.map((car) => car.car_location).filter(Boolean)),
+        ].sort();
+        setLocations(uniqueLocations as string[]);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch locations:", err);
+      });
   }, []);
 
   // Capitalize first letter of each word
   const capitalizeString = (str: string) => {
-    return str.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
+    return str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
   };
 
   const errors = {
     pickupLocation: pickupLocation ? "" : "Choose car location",
-    pickupAt: new Date(pickupAt).getTime() > Date.now() - 60 * 1000 ? "" : "Pick up must be in the future",
-    returnAt: new Date(returnAt) > new Date(pickupAt) ? "" : "Return must be after pick up",
+    pickupAt:
+      new Date(pickupAt).getTime() > Date.now() - 60 * 1000
+        ? ""
+        : "Pick up must be in the future",
+    returnAt:
+      new Date(returnAt) > new Date(pickupAt)
+        ? ""
+        : "Return must be after pick up",
   };
 
   const handleSearch = () => {
@@ -56,8 +72,7 @@ export default function Home() {
     if (hasErrors) {
       return;
     }
-    
-   
+
     const params = new URLSearchParams({
       pickupLocation,
       pickupAt,
@@ -82,8 +97,8 @@ export default function Home() {
               Find Your Perfect Rental Car
             </Heading>
             <Text fontSize="xl" maxW="2xl">
-              Choose from hundreds of vehicles at unbeatable prices. 
-              Your journey starts here.
+              Choose from hundreds of vehicles at unbeatable prices. Your
+              journey starts here.
             </Text>
           </VStack>
         </Container>
@@ -96,7 +111,7 @@ export default function Home() {
             <Heading size="lg" textAlign="center" color="gray.700">
               Search for Cars
             </Heading>
-            
+
             <Box w="100%" bg="white" p={8} borderRadius="lg" shadow="md">
               <Stack gap={4}>
                 <ChakraField.Root invalid={!!errors.pickupLocation}>
@@ -104,53 +119,70 @@ export default function Home() {
                   <NativeSelectRoot>
                     <NativeSelectField
                       value={pickupLocation}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPickupLocation(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                        setPickupLocation(e.target.value)
+                      }
                     >
                       <option value="">Select location</option>
-                      {locations.map(location => (
+                      {locations.map((location) => (
                         <option key={location} value={location}>
                           {capitalizeString(location)}
                         </option>
                       ))}
                     </NativeSelectField>
                   </NativeSelectRoot>
-                  {errors.pickupLocation && <ChakraField.ErrorText>{errors.pickupLocation}</ChakraField.ErrorText>}
+                  {errors.pickupLocation && (
+                    <ChakraField.ErrorText>
+                      {errors.pickupLocation}
+                    </ChakraField.ErrorText>
+                  )}
                 </ChakraField.Root>
 
-                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                <Grid
+                  templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                  gap={4}
+                >
                   <GridItem>
                     <ChakraField.Root invalid={!!errors.pickupAt}>
-                      <ChakraField.Label>Pick up date and time</ChakraField.Label>
+                      <ChakraField.Label>
+                        Pick up date and time
+                      </ChakraField.Label>
                       <Input
                         type="datetime-local"
                         value={pickupAt}
                         onChange={(e) => setPickupAt(e.target.value)}
                       />
-                      {errors.pickupAt && <ChakraField.ErrorText>{errors.pickupAt}</ChakraField.ErrorText>}
+                      {errors.pickupAt && (
+                        <ChakraField.ErrorText>
+                          {errors.pickupAt}
+                        </ChakraField.ErrorText>
+                      )}
                     </ChakraField.Root>
                   </GridItem>
-                  
+
                   <GridItem>
                     <ChakraField.Root invalid={!!errors.returnAt}>
-                      <ChakraField.Label>Return date and time</ChakraField.Label>
+                      <ChakraField.Label>
+                        Return date and time
+                      </ChakraField.Label>
                       <Input
                         type="datetime-local"
                         value={returnAt}
                         onChange={(e) => setReturnAt(e.target.value)}
                         min={pickupAt}
                       />
-                      {errors.returnAt && <ChakraField.ErrorText>{errors.returnAt}</ChakraField.ErrorText>}
+                      {errors.returnAt && (
+                        <ChakraField.ErrorText>
+                          {errors.returnAt}
+                        </ChakraField.ErrorText>
+                      )}
                     </ChakraField.Root>
                   </GridItem>
                 </Grid>
               </Stack>
-              
+
               <Box mt={6} textAlign="center">
-                <Button
-                  onClick={handleSearch}
-                  variant="primary"
-                  size="lg"
-                >
+                <Button onClick={handleSearch} variant="primary" size="lg">
                   Search Cars
                 </Button>
               </Box>
@@ -166,7 +198,7 @@ export default function Home() {
             <Heading size="lg" textAlign="center" color="gray.700">
               Quick Actions
             </Heading>
-            
+
             <HStack gap={4} flexWrap="wrap" justify="center">
               <Button
                 onClick={() => navigate("/cars")}
@@ -175,20 +207,24 @@ export default function Home() {
               >
                 Browse All Cars
               </Button>
-              <Button
-                onClick={() => navigate("/login")}
-                variant="ghost"
-                size="lg"
-              >
-                Sign In
-              </Button>
-              <Button
-                onClick={() => navigate("/signup")}
-                variant="primary"
-                size="lg"
-              >
-                Create Account
-              </Button>
+              {!isLoggedIn && (
+                <>
+                  <Button
+                    onClick={() => navigate("/login")}
+                    variant="ghost"
+                    size="lg"
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/signup")}
+                    variant="primary"
+                    size="lg"
+                  >
+                    Create Account
+                  </Button>
+                </>
+              )}
             </HStack>
           </VStack>
         </Container>
