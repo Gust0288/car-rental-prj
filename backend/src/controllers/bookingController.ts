@@ -344,23 +344,58 @@ export const getAllBookings = async (req: Request, res: Response) => {
     // Ensure overdue bookings are marked as expired
     await expireOverdueBookings();
 
-    const { rows } = await userPool.query(
+    // Get all bookings with user details using JOIN
+    const { rows: bookings } = await userPool.query(
       `SELECT 
-        id,
-        car_id,
-        user_id,
-        pickup_at,
-        return_at,
-        status,
-        price_total,
-        created_at,
-        updated_at
-      FROM bookings
-      WHERE status IN ('pending', 'confirmed', 'in_progress')
-      ORDER BY created_at DESC`
+        b.id,
+        b.car_id,
+        b.user_id,
+        b.pickup_at,
+        b.return_at,
+        b.status,
+        b.price_total,
+        b.created_at,
+        b.updated_at,
+        u.username,
+        u.email,
+        u.name as user_name,
+        u.user_last_name
+      FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.id
+      ORDER BY b.created_at DESC`
     );
 
-    res.json(rows);
+    // If no bookings, return empty array
+    if (bookings.length === 0) {
+      return res.json([]);
+    }
+
+    // Get car details from cars database
+    const carIds = [...new Set(bookings.map((b) => parseInt(b.car_id)))];
+    const { rows: cars } = await pool.query(
+      `SELECT id, make, model, year, img_path, car_location
+       FROM cars
+       WHERE id = ANY($1)`,
+      [carIds]
+    );
+
+    // Create a map of car details by id
+    const carsMap = new Map(cars.map((car) => [car.id, car]));
+
+    // Combine booking, user, and car data
+    const bookingsWithDetails = bookings.map((booking) => {
+      const car = carsMap.get(parseInt(booking.car_id)) || {};
+      return {
+        ...booking,
+        car_make: car.make,
+        car_model: car.model,
+        car_year: car.year,
+        car_img_path: car.img_path,
+        car_location: car.car_location,
+      };
+    });
+
+    res.json(bookingsWithDetails);
   } catch (error) {
     console.error("Error fetching all bookings:", error);
     res.status(500).json({ error: "Internal server error" });

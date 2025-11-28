@@ -35,6 +35,16 @@ interface BookingRow {
   start_date?: string;
   end_date?: string;
   created_at?: string;
+  // User details
+  username?: string;
+  email?: string;
+  user_name?: string;
+  user_last_name?: string;
+  // Car details
+  car_make?: string;
+  car_model?: string;
+  car_year?: number;
+  car_location?: string;
 }
 
 const AdminPage: React.FC = () => {
@@ -256,10 +266,34 @@ const AdminPage: React.FC = () => {
                       <Box>
                         <Text fontWeight="semibold">Booking #{b.id}</Text>
                         <Text fontSize="sm" color="gray.600">
-                          User: {b.user_id} • Car: {b.car_id}
+                          {b.username || `User #${b.user_id}`} (
+                          {b.email || "N/A"})
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
+                          {b.car_make && b.car_model
+                            ? `${b.car_make} ${b.car_model}${
+                                b.car_year ? ` (${b.car_year})` : ""
+                              }`
+                            : `Car #${b.car_id}`}
+                          {b.car_location && ` • ${b.car_location}`}
                         </Text>
                       </Box>
                       <HStack>
+                        {b.status && (
+                          <Badge
+                            colorScheme={
+                              b.status === "confirmed"
+                                ? "green"
+                                : b.status === "pending"
+                                ? "yellow"
+                                : b.status === "canceled"
+                                ? "red"
+                                : "gray"
+                            }
+                          >
+                            {b.status}
+                          </Badge>
+                        )}
                         <Text fontSize="sm">
                           Created:{" "}
                           {b.created_at
