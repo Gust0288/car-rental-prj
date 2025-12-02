@@ -91,8 +91,10 @@ const LoginPage = () => {
         title: "Login failed",
         description: errorMessage,
         type: "error",
-        duration: 100000
+        duration: TOAST_DURATIONS.short,
       });
+      // clear only the password so the user doesn't have to retype email
+      setFormData((prev) => ({ ...prev, password: "" }));
     } finally {
       setIsLoading(false);
     }
