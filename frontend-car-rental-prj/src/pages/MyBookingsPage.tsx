@@ -8,10 +8,12 @@ import {
   SimpleGrid,
   VStack,
   HStack,
+  Badge,
   Image,
   Skeleton,
 } from "@chakra-ui/react";
-import { FiAlertCircle } from "react-icons/fi";
+import { Separator } from "@chakra-ui/react/separator";
+import { FiCalendar, FiMapPin, FiAlertCircle } from "react-icons/fi";
 import { useUser } from "../context/UserContext";
 import { Button } from "../components/Button";
 import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader";
@@ -22,7 +24,32 @@ import {
 } from "../services/bookings";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 
-// Simplified: only showing make/model, image and actions per user request
+const locationNames: Record<string, string> = {
+  cph: "Copenhagen",
+  aar: "Aarhus",
+  odn: "Odense",
+};
+
+const statusStyles: Record<UserBooking["status"], { bg: string }> = {
+  pending: { bg: "yellow.100" },
+  confirmed: { bg: "green.100" },
+  in_progress: { bg: "blue.100" },
+  returned: { bg: "purple.100" },
+  canceled: { bg: "red.100" },
+  expired: { bg: "red.100" },
+};
+
+const formatDate = (date: string) => {
+  const value = new Date(date);
+  return value.toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const MyBookingsPage = () => {
   const navigate = useNavigate();
@@ -171,50 +198,126 @@ const MyBookingsPage = () => {
                 borderColor="gray.100"
               >
                 <VStack align="stretch" gap={5}>
-                  <Box>
-                    <Heading size="md" color="gray.800">
-                      {booking.make ? `${booking.make} ${booking.model}` : "Car"}
-                    </Heading>
-                  </Box>
+                  <HStack justify="space-between" align="start">
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" mb={1}>
+                        Booking #{booking.id}
+                      </Text>
+                      <Heading size="md" color="gray.800">
+                        {booking.make
+                          ? `${booking.make} ${booking.model}`
+                          : "Car"}
+                      </Heading>
+                      {booking.year && (
+                        <Text color="gray.600" fontSize="sm">
+                          {booking.year}
+                        </Text>
+                      )}
+                    </Box>
+                    <Badge
+                      bg={statusStyles[booking.status]?.bg ?? "gray.100"}
+                      textTransform="capitalize"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontWeight="semibold"
+                    >
+                      {booking.status.replace(/_/g, " ")}
+                    </Badge>
+                  </HStack>
 
-                  {booking.img_path ? (
+                  {booking.img_path && (
                     <Image
                       src={booking.img_path}
-                      alt={`${booking.make ?? ""} ${booking.model ?? ""}`.trim() || "Booked car"}
+                      alt={
+                        `${booking.make ?? ""} ${booking.model ?? ""}`.trim() ||
+                        "Booked car"
+                      }
                       borderRadius="md"
-                      height="200px"
+                      height="160px"
                       objectFit="cover"
                     />
-                  ) : (
-                    <Skeleton height="200px" borderRadius="md" />
                   )}
 
-                  <HStack gap={2} pt={2} width="100%">
-                    <Box flex={1}>
-                      <Button
-                        variant="primary"
-                        onClick={() => navigate(`/bookings/${booking.id}`)}
-                        size="sm"
-                        fullWidth
-                      >
-                        View Details
-                      </Button>
+                  <VStack align="stretch" gap={4}>
+                    <Box>
+                      <HStack gap={3} color="blue.500" fontWeight="semibold">
+                        <FiCalendar />
+                        <Text>Pickup</Text>
+                      </HStack>
+                      <Text color="gray.700" mt={1}>
+                        {formatDate(booking.pickup_at)}
+                      </Text>
+                      <HStack color="gray.600" fontSize="sm" mt={1}>
+                        <FiMapPin />
+                        <Text>
+                          {locationNames[booking.car_location ?? ""] ??
+                            booking.car_location ??
+                            "N/A"}
+                        </Text>
+                      </HStack>
                     </Box>
 
-                    {(booking.status === "pending" || booking.status === "confirmed") && (
+                    <Separator />
+
+                    <Box>
+                      <HStack gap={3} color="blue.500" fontWeight="semibold">
+                        <FiCalendar />
+                        <Text>Return</Text>
+                      </HStack>
+                      <Text color="gray.700" mt={1}>
+                        {formatDate(booking.return_at)}
+                      </Text>
+                      <HStack color="gray.600" fontSize="sm" mt={1}>
+                        <FiMapPin />
+                        <Text>
+                          {locationNames[booking.car_location ?? ""] ??
+                            booking.car_location ??
+                            "N/A"}
+                        </Text>
+                      </HStack>
+                    </Box>
+                  </VStack>
+
+                  <VStack align="stretch" pt={2} gap={3}>
+                    <Text fontWeight="bold" color="gray.800">
+                      Total:{" "}
+                      {(() => {
+                        const amt = Number(booking.price_total);
+                        return Number.isFinite(amt)
+                          ? `${amt.toFixed(2)} DKK`
+                          : "--";
+                      })()}
+                    </Text>
+                    <HStack gap={2} width="100%">
                       <Box flex={1}>
                         <Button
-                          variant="danger"
-                          onClick={() => handleCancelBooking(booking.id)}
+                          variant="primary"
+                          onClick={() => navigate(`/bookings/${booking.id}`)}
                           size="sm"
-                          disabled={cancelingBookingId === booking.id}
                           fullWidth
                         >
-                          {cancelingBookingId === booking.id ? "Canceling..." : "Cancel"}
+                          View Details
                         </Button>
                       </Box>
-                    )}
-                  </HStack>
+                      {(booking.status === "pending" ||
+                        booking.status === "confirmed") && (
+                        <Box flex={1}>
+                          <Button
+                            variant="danger"
+                            onClick={() => handleCancelBooking(booking.id)}
+                            size="sm"
+                            disabled={cancelingBookingId === booking.id}
+                            fullWidth
+                          >
+                            {cancelingBookingId === booking.id
+                              ? "Canceling..."
+                              : "Cancel"}
+                          </Button>
+                        </Box>
+                      )}
+                    </HStack>
+                  </VStack>
                 </VStack>
               </Box>
             ))}
