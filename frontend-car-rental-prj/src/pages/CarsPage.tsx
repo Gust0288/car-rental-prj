@@ -28,7 +28,7 @@ export default function CarsPage() {
   const [searchParams] = useSearchParams();
   const search = searchParams.get("search") || "";
 
-  // Replace useState + useEffect with React Query hooks
+  // React Query hooks
   const {
     data: cars = [],
     isLoading: loading,
