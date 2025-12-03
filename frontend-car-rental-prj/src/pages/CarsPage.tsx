@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Box,
@@ -12,6 +12,7 @@ import {
   Input,
   Grid,
   GridItem,
+  Badge,
 } from "@chakra-ui/react";
 import {
   NativeSelectField,
@@ -19,17 +20,29 @@ import {
 } from "@chakra-ui/react/native-select";
 import { Checkbox } from "@chakra-ui/react/checkbox";
 import { Field as ChakraField } from "@chakra-ui/react/field";
-import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { CarGrid } from "../components/CarGrid";
-import { getBookedCarIds } from "../services/bookings";
+import { useCars, useBookedCarIds } from "../hooks/useCars";
 
 export default function CarsPage() {
   const [searchParams] = useSearchParams();
-  const [cars, setCars] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [bookedCarIds, setBookedCarIds] = useState<number[]>([]);
+  const search = searchParams.get("search") || "";
+
+  // Replace useState + useEffect with React Query hooks
+  const {
+    data: cars = [],
+    isLoading: loading,
+    error: carsError,
+    isRefetching,
+  } = useCars(search, 200);
+
+  const { data: bookedCarIds = [], isLoading: loadingBooked } =
+    useBookedCarIds();
+
+  const error = carsError
+    ? "Failed to load cars. Please make sure the backend server is running."
+    : null;
+
   const [selectedMake, setSelectedMake] = useState<string>("all");
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [selectedTransmission, setSelectedTransmission] =
@@ -59,28 +72,6 @@ export default function CarsPage() {
     !hasRentalDetailsFromUrl
   );
   const [isVehicleSpecsExpanded, setIsVehicleSpecsExpanded] = useState(true);
-
-  useEffect(() => {
-    const search = searchParams.get("search") || "";
-
-    setLoading(true);
-    Promise.all([getCars(search || undefined, 200), getBookedCarIds()])
-      .then(([carsData, bookedIds]) => {
-        console.log("Cars loaded:", carsData.length);
-        console.log("Booked car IDs:", bookedIds);
-        setCars(carsData);
-        setBookedCarIds(bookedIds);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch data:", err);
-        setError(
-          "Failed to load cars. Please make sure the backend server is running."
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [searchParams]);
-
-  // (previous deduplication removed) — we operate on full rows from the API
 
   // Capitalize first letter of each word
   const capitalizeString = (str: string) => {
@@ -209,9 +200,16 @@ export default function CarsPage() {
   return (
     <Box p={6}>
       <Container maxW="7xl">
-        <Heading size="lg" mb={6} textAlign="center">
-          Car Selection
-        </Heading>
+        <HStack justify="space-between" align="center" mb={6}>
+          <Heading size="lg" textAlign="center" flex="1">
+            Car Selection
+          </Heading>
+          {isRefetching && (
+            <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
+              Updating...
+            </Badge>
+          )}
+        </HStack>
 
         {/* Filter Controls */}
         <Box
@@ -585,9 +583,12 @@ export default function CarsPage() {
           </Box>
         </Box>
 
-        {loading ? (
-          <Box textAlign="center">
+        {loading || loadingBooked ? (
+          <Box textAlign="center" py={8}>
             <Spinner size="xl" />
+            <Text mt={4} color="gray.600">
+              Loading cars...
+            </Text>
           </Box>
         ) : error ? (
           <Box
