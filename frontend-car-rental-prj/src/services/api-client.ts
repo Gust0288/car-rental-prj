@@ -2,7 +2,7 @@ import { httpClient } from "./httpClient";
 
 export const authService = {
   login: (credentials: { email: string; password: string }) =>
-    httpClient.post("/users/login", credentials),
+    httpClient.post("/users/login", credentials, { suppressAuthRedirect: true } as any),
 
   signup: (userData: {
     username: string;
@@ -11,7 +11,7 @@ export const authService = {
     email: string;
     password: string;
     confirmPassword: string;
-  }) => httpClient.post("/users/signup", userData),
+  }) => httpClient.post("/users/signup", userData, { suppressAuthRedirect: true } as any),
 
   getProfile: (userId: number, config?: any) =>
     httpClient.get(`/users/profile/${userId}`, config),

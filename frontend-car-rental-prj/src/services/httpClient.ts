@@ -22,11 +22,13 @@ httpClient.interceptors.request.use(
 httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      
+    const status = error.response?.status
+    const suppress = !!error.config?.suppressAuthRedirect
+
+    if (status === 401 && !suppress) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      
+
       window.location.href = '/login'
     }
     return Promise.reject(error)
