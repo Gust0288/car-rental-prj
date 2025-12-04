@@ -78,14 +78,20 @@ const LoginPage = () => {
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
 
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response?: { data?: { message?: string } };
-        };
+      if (error && typeof error === "object") {
+        // Try to extract message from axios error structure
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const axiosError = error as any;
+        
+        
         errorMessage =
-          axiosError.response?.data?.message || "Something went wrong";
+          axiosError?.response?.data?.message || 
+          axiosError?.response?.data?.error ||
+          axiosError?.message ||
+          "Something went wrong";
       }
 
+      
       
       toaster.create({
         title: "Login failed",
