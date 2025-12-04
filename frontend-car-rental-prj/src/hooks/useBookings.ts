@@ -4,7 +4,6 @@ import {
   cancelBooking,
   type UserBooking,
 } from "../services/bookings";
-import { httpClient } from "../services/httpClient";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 import { carQueryKeys } from "./useCars";
 
