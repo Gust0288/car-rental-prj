@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -8,21 +8,17 @@ import {
   SimpleGrid,
   VStack,
   HStack,
-  Badge,
   Image,
   Skeleton,
+  Badge,
 } from "@chakra-ui/react";
 import { Separator } from "@chakra-ui/react/separator";
-import { FiCalendar, FiMapPin, FiAlertCircle } from "react-icons/fi";
+import { FiAlertCircle, FiCalendar, FiMapPin } from "react-icons/fi";
 import { useUser } from "../context/UserContext";
 import { Button } from "../components/Button";
 import { BookingsSkeletonLoader } from "../components/BookingsSkeletonLoader";
-import {
-  getUserBookings,
-  cancelBooking,
-  type UserBooking,
-} from "../services/bookings";
-import { toaster, TOAST_DURATIONS } from "../utils/toaster";
+import { useUserBookings, useCancelBooking } from "../hooks/useBookings";
+import type { UserBooking } from "../services/bookings";
 
 const locationNames: Record<string, string> = {
   cph: "Copenhagen",
@@ -55,41 +51,18 @@ const MyBookingsPage = () => {
   const navigate = useNavigate();
   const { user } = useUser();
 
-  const [bookings, setBookings] = useState<UserBooking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [cancelingBookingId, setCancelingBookingId] = useState<number | null>(
-    null
-  );
+  // Replace manual fetching with React Query hooks
+  const {
+    data: bookings = [],
+    isLoading,
+    error: queryError,
+  } = useUserBookings(user?.id);
 
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
+  const cancelMutation = useCancelBooking();
 
-    const fetchBookings = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getUserBookings(user.id);
-        setBookings(data);
-      } catch (err) {
-        console.error(err);
-        const errorMessage = "Failed to load bookings. Please try again.";
-        setError(errorMessage);
-        toaster.create({
-          title: "Error",
-          description: errorMessage,
-          type: "error",
-          duration: TOAST_DURATIONS.medium,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBookings();
-  }, [user]);
+  const error = queryError
+    ? "Failed to load bookings. Please try again."
+    : null;
 
   const hasBookings = useMemo(() => bookings.length > 0, [bookings]);
 
@@ -98,36 +71,8 @@ const MyBookingsPage = () => {
       return;
     }
 
-    try {
-      setCancelingBookingId(bookingId);
-      await cancelBooking(bookingId);
-
-      // Update the booking status in the local state
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) =>
-          booking.id === bookingId
-            ? { ...booking, status: "canceled" as const }
-            : booking
-        )
-      );
-
-      toaster.create({
-        title: "Booking canceled",
-        description: "Your booking has been successfully canceled.",
-        type: "success",
-        duration: TOAST_DURATIONS.medium,
-      });
-    } catch (error) {
-      console.error("Failed to cancel booking:", error);
-      toaster.create({
-        title: "Error",
-        description: "Failed to cancel booking. Please try again.",
-        type: "error",
-        duration: TOAST_DURATIONS.medium,
-      });
-    } finally {
-      setCancelingBookingId(null);
-    }
+    // Optimistic update happens automatically in the mutation hook
+    cancelMutation.mutate(bookingId);
   };
 
   if (!user) {
@@ -307,10 +252,11 @@ const MyBookingsPage = () => {
                             variant="danger"
                             onClick={() => handleCancelBooking(booking.id)}
                             size="sm"
-                            disabled={cancelingBookingId === booking.id}
+                            disabled={cancelMutation.isPending}
                             fullWidth
                           >
-                            {cancelingBookingId === booking.id
+                            {cancelMutation.isPending &&
+                            cancelMutation.variables === booking.id
                               ? "Canceling..."
                               : "Cancel"}
                           </Button>

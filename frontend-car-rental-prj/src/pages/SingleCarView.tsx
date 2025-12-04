@@ -31,12 +31,15 @@ import {
 import { Field as ChakraField } from "@chakra-ui/react/field";
 import { Separator } from "@chakra-ui/react/separator";
 import { FiArrowLeft } from "react-icons/fi";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "../components/Button";
 import { getCars } from "../services/cars";
 import type { Car } from "../services/cars";
 import { useUser } from "../context/UserContext";
 import { toaster } from "../utils/toaster";
 import { httpClient } from "../services/httpClient";
+import { carQueryKeys } from "../hooks/useCars";
+import { bookingQueryKeys } from "../hooks/useBookings";
 
 const labelize = (s: string) =>
   s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -106,6 +109,7 @@ const SingleCarView = () => {
   const location = useLocation();
   const [sp] = useSearchParams();
   const { user, isLoggedIn } = useUser();
+  const queryClient = useQueryClient();
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
@@ -238,6 +242,11 @@ const SingleCarView = () => {
       console.log("✅ Booking successful:", response.data);
 
       const booking = response.data;
+
+      // Invalidate queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: carQueryKeys.booked() });
+      queryClient.invalidateQueries({ queryKey: bookingQueryKeys.all });
+
       toaster.create({
         title: "Booking confirmed",
         type: "success",
