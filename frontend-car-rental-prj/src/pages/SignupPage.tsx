@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { httpClient } from '../services/httpClient'
+import { toaster, TOAST_DURATIONS } from '../utils/toaster'
 
 // variables
 const CONTAINER_LAYOUT = {
@@ -23,11 +24,6 @@ const FORM_CONFIG = {
   buttonSize: "lg" as const,
   borderRadius: "md" as const,
   buttonMarginTop: 4
-};
-
-const MESSAGE_THEME = {
-  success: { bg: "green.100", border: "green.500", text: "green.700" },
-  error: { bg: "red.100", border: "red.500", text: "red.700" }
 };
 
 const SIGNUP_FLOW = {
@@ -46,7 +42,6 @@ const SignupPage = () => {
     confirmPassword: ''
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const navigate = useNavigate()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,16 +55,16 @@ const SignupPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setMessage(null)
 
     try {
       const response = await httpClient.post('/users/signup', formData)
       
       if (response.data.message === 'User created successfully') {
-        
-        setMessage({
+        toaster.create({
+          title: 'Account created successfully',
+          description: 'Please login with your credentials.',
           type: 'success',
-          text: SIGNUP_FLOW.successMessage
+          duration: TOAST_DURATIONS.short
         })
         
         setTimeout(() => {
@@ -79,14 +74,22 @@ const SignupPage = () => {
     } catch (error: unknown) {
       let errorMessage = 'Something went wrong'
       
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } }
-        errorMessage = axiosError.response?.data?.message || 'Something went wrong'
+      if (error && typeof error === 'object') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const axiosError = error as any
+        
+        errorMessage =
+          axiosError?.response?.data?.message || 
+          axiosError?.response?.data?.error ||
+          axiosError?.message ||
+          'Something went wrong'
       }
       
-      setMessage({
+      toaster.create({
+        title: 'Signup failed',
+        description: errorMessage,
         type: 'error',
-        text: errorMessage
+        duration: TOAST_DURATIONS.short
       })
     } finally {
       setIsLoading(false)
@@ -104,24 +107,6 @@ const SignupPage = () => {
           </Heading>
 
           <Box w={CONTAINER_LAYOUT.containerWidth} bg="white" p={CONTAINER_LAYOUT.padding.form} borderRadius={FORM_CONFIG.borderRadius} boxShadow="sm">
-            {message && (
-              <Box
-                p={4}
-                mb={4}
-                borderRadius={FORM_CONFIG.borderRadius}
-                bg={MESSAGE_THEME[message.type].bg}
-                borderLeft="4px solid"
-                borderColor={MESSAGE_THEME[message.type].border}
-              >
-                <Text
-                  color={MESSAGE_THEME[message.type].text}
-                  fontWeight="bold"
-                >
-                  {message.text}
-                </Text>
-              </Box>
-            )}
-
             <form onSubmit={handleSubmit}>
               <VStack gap={CONTAINER_LAYOUT.spacing.form} align="stretch" w="100%">
                 <Box w="100%">
