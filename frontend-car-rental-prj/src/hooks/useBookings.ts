@@ -6,6 +6,7 @@ import {
 } from "../services/bookings";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 import { carQueryKeys } from "./useCars";
+import { logger } from "../utils/logger";
 
 export const bookingQueryKeys = {
   all: ["bookings"] as const,
@@ -18,7 +19,17 @@ export const bookingQueryKeys = {
 export function useUserBookings(userId: number | undefined) {
   return useQuery({
     queryKey: bookingQueryKeys.user(userId!),
-    queryFn: () => getUserBookings(userId!),
+    queryFn: async () => {
+      logger.debug("Fetching user bookings", { userId });
+      try {
+        const bookings = await getUserBookings(userId!);
+        logger.info(`Loaded ${bookings.length} bookings for user`, { userId });
+        return bookings;
+      } catch (error) {
+        logger.error("Failed to fetch user bookings", error, { userId });
+        throw error;
+      }
+    },
 
     enabled: !!userId, // Only run if userId exists
 
@@ -39,7 +50,17 @@ export function useCancelBooking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (bookingId: number) => cancelBooking(bookingId),
+    mutationFn: async (bookingId: number) => {
+      logger.debug("Canceling booking", { bookingId });
+      try {
+        const result = await cancelBooking(bookingId);
+        logger.info("Booking canceled successfully", { bookingId });
+        return result;
+      } catch (error) {
+        logger.error("Failed to cancel booking", error, { bookingId });
+        throw error;
+      }
+    },
 
     // Optimistic Update - update UI immediately
     onMutate: async (bookingId) => {

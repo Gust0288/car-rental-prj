@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCars, type Car } from "../services/cars";
 import { getBookedCarIds } from "../services/bookings";
+import { logger } from "../utils/logger";
 
 // Query Keys - centralized for consistency
 export const carQueryKeys = {
@@ -19,7 +20,17 @@ export function useCars(search?: string, limit = 200) {
 
   return useQuery({
     queryKey: carQueryKeys.list({ search, limit }),
-    queryFn: () => getCars(search, limit),
+    queryFn: async () => {
+      logger.debug("Fetching cars", { search, limit });
+      try {
+        const cars = await getCars(search, limit);
+        logger.info(`Loaded ${cars.length} cars`, { search });
+        return cars;
+      } catch (error) {
+        logger.error("Failed to fetch cars", error, { search, limit });
+        throw error;
+      }
+    },
 
     // Caching Configuration
     staleTime: 5 * 60 * 1000, // 5 min - cars rarely change
@@ -55,7 +66,17 @@ export function useCars(search?: string, limit = 200) {
 export function useBookedCarIds() {
   return useQuery({
     queryKey: carQueryKeys.booked(),
-    queryFn: getBookedCarIds,
+    queryFn: async () => {
+      logger.debug("Fetching booked car IDs");
+      try {
+        const bookedIds = await getBookedCarIds();
+        logger.info(`Loaded ${bookedIds.length} booked car IDs`);
+        return bookedIds;
+      } catch (error) {
+        logger.error("Failed to fetch booked car IDs", error);
+        throw error;
+      }
+    },
 
     staleTime: 2 * 60 * 1000, // 2 min - bookings change more frequently
     gcTime: 10 * 60 * 1000, // 10 min

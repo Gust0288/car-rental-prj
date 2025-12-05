@@ -112,12 +112,12 @@ export const NavBar = () => {
         mx="auto"
         display={{ base: "none", md: "flex" }}
       >
-        <Text 
-          fontSize="xl" 
-          fontWeight="bold" 
+        <Text
+          fontSize="xl"
+          fontWeight="bold"
           color="white"
           cursor="pointer"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
         >
           Car Rental
         </Text>
@@ -149,7 +149,10 @@ export const NavBar = () => {
                       }
                     } else {
                       // if empty and we're on /cars with a query, clear it
-                      if (location.pathname.startsWith("/cars") && location.search) {
+                      if (
+                        location.pathname.startsWith("/cars") &&
+                        location.search
+                      ) {
                         navigate(`/cars`);
                       }
                     }
@@ -368,12 +371,12 @@ export const NavBar = () => {
         width="100%"
         display={{ base: "flex", md: "none" }}
       >
-        <Text 
-          fontSize="lg" 
-          fontWeight="bold" 
+        <Text
+          fontSize="lg"
+          fontWeight="bold"
           color="white"
           cursor="pointer"
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
         >
           Car Rental
         </Text>
@@ -442,28 +445,29 @@ export const NavBar = () => {
             >
               Cars
             </Button>
-            <Button
-              variant={isActivePath("/my-bookings") ? "solid" : "outline"}
-              colorScheme="blue"
-              onClick={() => {
-                navigate("/my-bookings");
-                handleToggle();
-              }}
-              width="100%"
-              justifyContent="center"
-              borderWidth="1px"
-              _hover={{
-                bg: isActivePath("/my-bookings") ? "blue.600" : "blue.50",
-              }}
-              size="md"
-              fontSize="md"
-              fontWeight="medium"
-              py={3}
-            >
-              My Bookings
-            </Button>
+
             {isLoggedIn && user ? (
               <>
+                <Button
+                  variant={isActivePath("/my-bookings") ? "solid" : "outline"}
+                  colorScheme="blue"
+                  onClick={() => {
+                    navigate("/my-bookings");
+                    handleToggle();
+                  }}
+                  width="100%"
+                  justifyContent="center"
+                  borderWidth="1px"
+                  _hover={{
+                    bg: isActivePath("/my-bookings") ? "blue.600" : "blue.50",
+                  }}
+                  size="md"
+                  fontSize="md"
+                  fontWeight="medium"
+                  py={3}
+                >
+                  My Bookings
+                </Button>
                 <Button
                   variant={isActivePath("/profile") ? "solid" : "outline"}
                   colorScheme="blue"

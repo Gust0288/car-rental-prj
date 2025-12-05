@@ -1,109 +1,138 @@
-import {
-  Box,
-  Button,
-  Heading,
-  Input,
-  VStack,
-  Text
-} from '@chakra-ui/react'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { httpClient } from '../services/httpClient'
+import { Box, Button, Heading, Input, VStack, Text } from "@chakra-ui/react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { httpClient } from "../services/httpClient";
+import { logger } from "../utils/logger";
 
 // variables
 const CONTAINER_LAYOUT = {
   maxWidth: "7xl",
   containerWidth: { base: "95%", md: "500px" },
   padding: { container: 10, form: 12 },
-  spacing: { sections: 8, form: 6 }
+  spacing: { sections: 8, form: 6 },
 };
 
 const FORM_CONFIG = {
   inputSize: "lg" as const,
   buttonSize: "lg" as const,
   borderRadius: "md" as const,
-  buttonMarginTop: 4
+  buttonMarginTop: 4,
 };
 
 const MESSAGE_THEME = {
   success: { bg: "green.100", border: "green.500", text: "green.700" },
-  error: { bg: "red.100", border: "red.500", text: "red.700" }
+  error: { bg: "red.100", border: "red.500", text: "red.700" },
 };
 
 const SIGNUP_FLOW = {
   redirectDelay: 2000,
   redirectTarget: "/login",
-  successMessage: "Account created successfully! Please login with your credentials."
+  successMessage:
+    "Account created successfully! Please login with your credentials.",
 };
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    name: '',
-    user_last_name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const navigate = useNavigate()
+    username: "",
+    name: "",
+    user_last_name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setMessage(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage(null);
 
     try {
-      const response = await httpClient.post('/users/signup', formData)
-      
-      if (response.data.message === 'User created successfully') {
-        
+      logger.debug("Signup attempt", {
+        email: formData.email,
+        username: formData.username,
+      });
+      const response = await httpClient.post("/users/signup", formData);
+
+      if (response.data.message === "User created successfully") {
+        logger.info("Signup successful", {
+          email: formData.email,
+          username: formData.username,
+        });
+
         setMessage({
-          type: 'success',
-          text: SIGNUP_FLOW.successMessage
-        })
-        
+          type: "success",
+          text: SIGNUP_FLOW.successMessage,
+        });
+
         setTimeout(() => {
-          navigate(SIGNUP_FLOW.redirectTarget)
-        }, SIGNUP_FLOW.redirectDelay)
+          navigate(SIGNUP_FLOW.redirectTarget);
+        }, SIGNUP_FLOW.redirectDelay);
       }
     } catch (error: unknown) {
-      let errorMessage = 'Something went wrong'
-      
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } }
-        errorMessage = axiosError.response?.data?.message || 'Something went wrong'
+      let errorMessage = "Something went wrong";
+
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
+        errorMessage =
+          axiosError.response?.data?.message || "Something went wrong";
       }
-      
+
+      logger.error("Signup failed", error, {
+        email: formData.email,
+        username: formData.username,
+        errorMessage,
+      });
+
       setMessage({
-        type: 'error',
-        text: errorMessage
-      })
+        type: "error",
+        text: errorMessage,
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Box minH="100vh" bg="gray.50" display="flex" flexDirection="column">
       {/* Main Content */}
-    
-      <Box maxW={CONTAINER_LAYOUT.maxWidth} mx="auto" py={CONTAINER_LAYOUT.padding.container} px={4} flex="1" display="flex" alignItems="center">
+
+      <Box
+        maxW={CONTAINER_LAYOUT.maxWidth}
+        mx="auto"
+        py={CONTAINER_LAYOUT.padding.container}
+        px={4}
+        flex="1"
+        display="flex"
+        alignItems="center"
+      >
         <VStack gap={CONTAINER_LAYOUT.spacing.sections} align="center" w="100%">
           <Heading size="4xl" textAlign="center" color="gray.700">
             Sign up
           </Heading>
 
-          <Box w={CONTAINER_LAYOUT.containerWidth} bg="white" p={CONTAINER_LAYOUT.padding.form} borderRadius={FORM_CONFIG.borderRadius} boxShadow="sm">
+          <Box
+            w={CONTAINER_LAYOUT.containerWidth}
+            bg="white"
+            p={CONTAINER_LAYOUT.padding.form}
+            borderRadius={FORM_CONFIG.borderRadius}
+            boxShadow="sm"
+          >
             {message && (
               <Box
                 p={4}
@@ -123,9 +152,15 @@ const SignupPage = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              <VStack gap={CONTAINER_LAYOUT.spacing.form} align="stretch" w="100%">
+              <VStack
+                gap={CONTAINER_LAYOUT.spacing.form}
+                align="stretch"
+                w="100%"
+              >
                 <Box w="100%">
-                  <Text mb={2} fontWeight="semibold">Username</Text>
+                  <Text mb={2} fontWeight="semibold">
+                    Username
+                  </Text>
                   <Input
                     name="username"
                     type="text"
@@ -139,7 +174,9 @@ const SignupPage = () => {
                 </Box>
 
                 <Box>
-                  <Text mb={2} fontWeight="semibold">Name</Text>
+                  <Text mb={2} fontWeight="semibold">
+                    Name
+                  </Text>
                   <Input
                     name="name"
                     type="text"
@@ -152,7 +189,9 @@ const SignupPage = () => {
                 </Box>
 
                 <Box>
-                  <Text mb={2} fontWeight="semibold">Last Name</Text>
+                  <Text mb={2} fontWeight="semibold">
+                    Last Name
+                  </Text>
                   <Input
                     name="user_last_name"
                     type="text"
@@ -165,7 +204,9 @@ const SignupPage = () => {
                 </Box>
 
                 <Box>
-                  <Text mb={2} fontWeight="semibold">Email</Text>
+                  <Text mb={2} fontWeight="semibold">
+                    Email
+                  </Text>
                   <Input
                     name="email"
                     type="email"
@@ -178,7 +219,9 @@ const SignupPage = () => {
                 </Box>
 
                 <Box>
-                  <Text mb={2} fontWeight="semibold">Password</Text>
+                  <Text mb={2} fontWeight="semibold">
+                    Password
+                  </Text>
                   <Input
                     name="password"
                     type="password"
@@ -191,7 +234,9 @@ const SignupPage = () => {
                 </Box>
 
                 <Box>
-                  <Text mb={2} fontWeight="semibold">Confirm Password</Text>
+                  <Text mb={2} fontWeight="semibold">
+                    Confirm Password
+                  </Text>
                   <Input
                     name="confirmPassword"
                     type="password"
@@ -211,7 +256,7 @@ const SignupPage = () => {
                   loading={isLoading}
                   mt={FORM_CONFIG.buttonMarginTop}
                 >
-                  {isLoading ? 'Creating account...' : 'signup'}
+                  {isLoading ? "Creating account..." : "signup"}
                 </Button>
               </VStack>
             </form>
@@ -219,7 +264,7 @@ const SignupPage = () => {
         </VStack>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default SignupPage
+export default SignupPage;
