@@ -2,6 +2,7 @@ import { Box, Button, Heading, Input, VStack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { httpClient } from "../services/httpClient";
+import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 import { logger } from "../utils/logger";
 
 // variables
@@ -17,11 +18,6 @@ const FORM_CONFIG = {
   buttonSize: "lg" as const,
   borderRadius: "md" as const,
   buttonMarginTop: 4,
-};
-
-const MESSAGE_THEME = {
-  success: { bg: "green.100", border: "green.500", text: "green.700" },
-  error: { bg: "red.100", border: "red.500", text: "red.700" },
 };
 
 const SIGNUP_FLOW = {
@@ -41,10 +37,6 @@ const SignupPage = () => {
     confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +50,6 @@ const SignupPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage(null);
 
     try {
       logger.debug("Signup attempt", {
@@ -73,9 +64,11 @@ const SignupPage = () => {
           username: formData.username,
         });
 
-        setMessage({
+        toaster.create({
+          title: "Account created successfully",
+          description: "Please login with your credentials.",
           type: "success",
-          text: SIGNUP_FLOW.successMessage,
+          duration: TOAST_DURATIONS.short,
         });
 
         setTimeout(() => {
@@ -85,12 +78,15 @@ const SignupPage = () => {
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
 
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response?: { data?: { message?: string } };
-        };
+      if (error && typeof error === "object") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const axiosError = error as any;
+
         errorMessage =
-          axiosError.response?.data?.message || "Something went wrong";
+          axiosError?.response?.data?.message ||
+          axiosError?.response?.data?.error ||
+          axiosError?.message ||
+          "Something went wrong";
       }
 
       logger.error("Signup failed", error, {
@@ -99,9 +95,11 @@ const SignupPage = () => {
         errorMessage,
       });
 
-      setMessage({
+      toaster.create({
+        title: "Signup failed",
+        description: errorMessage,
         type: "error",
-        text: errorMessage,
+        duration: TOAST_DURATIONS.short,
       });
     } finally {
       setIsLoading(false);
@@ -133,24 +131,6 @@ const SignupPage = () => {
             borderRadius={FORM_CONFIG.borderRadius}
             boxShadow="sm"
           >
-            {message && (
-              <Box
-                p={4}
-                mb={4}
-                borderRadius={FORM_CONFIG.borderRadius}
-                bg={MESSAGE_THEME[message.type].bg}
-                borderLeft="4px solid"
-                borderColor={MESSAGE_THEME[message.type].border}
-              >
-                <Text
-                  color={MESSAGE_THEME[message.type].text}
-                  fontWeight="bold"
-                >
-                  {message.text}
-                </Text>
-              </Box>
-            )}
-
             <form onSubmit={handleSubmit}>
               <VStack
                 gap={CONTAINER_LAYOUT.spacing.form}
