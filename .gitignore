@@ -29,6 +29,13 @@ dist/
 build/
 */build/
 
+# Test outputs and reports
+playwright-report/
+test-results/
+*/playwright-report/
+*/test-results/
+*/e2e/EXPAND_IMPORVE_CI.md
+
 # Logs
 *.log
 npm-debug.log*
