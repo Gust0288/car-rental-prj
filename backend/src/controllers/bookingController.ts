@@ -344,9 +344,9 @@ export const getAllBookings = async (req: Request, res: Response) => {
     // Ensure overdue bookings are marked as expired
     await expireOverdueBookings();
 
-    // Get all bookings with user details using JOIN
-    const { rows: bookings } = await userPool.query(
-      `SELECT 
+    // Get optional date range parameters for availability filtering
+    const { pickup_at, return_at } = req.query;
+    let query = `SELECT 
         b.id,
         b.car_id,
         b.user_id,
@@ -362,8 +362,19 @@ export const getAllBookings = async (req: Request, res: Response) => {
         u.user_last_name
       FROM bookings b
       LEFT JOIN users u ON b.user_id = u.id
-      ORDER BY b.created_at DESC`
-    );
+      WHERE b.status IN ('pending', 'confirmed', 'in_progress')`;
+    
+    const params: (string | string[])[] = [];
+
+    // If date range is provided, only return bookings that conflict with this range
+    if (pickup_at && return_at) {
+      query += ` AND tstzrange(b.pickup_at, b.return_at, '[)') && tstzrange($1::timestamptz, $2::timestamptz, '[)')`;
+      params.push(pickup_at as string, return_at as string);
+    }
+
+    query += ` ORDER BY b.created_at DESC`;
+
+    const { rows: bookings } = await userPool.query(query, params);
 
     // If no bookings, return empty array
     if (bookings.length === 0) {

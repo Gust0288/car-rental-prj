@@ -26,12 +26,19 @@ export type UserBooking = Booking & {
   car_location?: string;
 };
 
-export async function getBookedCarIds(): Promise<number[]> {
+export async function getBookedCarIds(
+  pickupAt?: string,
+  returnAt?: string
+): Promise<number[]> {
   try {
-    // Fetch all bookings (you might want to add a dedicated endpoint for this)
-    // For now, we'll need to implement an endpoint that returns just booked car IDs
-    // or we filter from all bookings
-    const { data } = await httpClient.get<Booking[]>("/bookings");
+    const params: Record<string, string> = {};
+    if (pickupAt) params.pickup_at = pickupAt;
+    if (returnAt) params.return_at = returnAt;
+
+    // Fetch all bookings with optional date range for availability checking
+    const { data } = await httpClient.get<Booking[]>("/bookings", {
+      params,
+    });
 
     console.log("Raw bookings data:", data);
 

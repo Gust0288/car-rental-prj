@@ -28,6 +28,19 @@ export default function CarsPage() {
   const [searchParams] = useSearchParams();
   const search = searchParams.get("search") || "";
 
+  // Location and date/time filters - Initialize from URL params (declare first!)
+  const [pickupLocation, setPickupLocation] = useState(
+    searchParams.get("pickupLocation") || ""
+  );
+  const [pickupAt, setPickupAt] = useState(
+    searchParams.get("pickupAt") ||
+      new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
+  const [returnAt, setReturnAt] = useState(
+    searchParams.get("returnAt") ||
+      new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
+
   // React Query hooks
   const {
     data: cars = [],
@@ -37,7 +50,7 @@ export default function CarsPage() {
   } = useCars(search, 200);
 
   const { data: bookedCarIds = [], isLoading: loadingBooked } =
-    useBookedCarIds();
+    useBookedCarIds(pickupAt, returnAt);
 
   const error = carsError
     ? "Failed to load cars. Please make sure the backend server is running."
@@ -51,19 +64,6 @@ export default function CarsPage() {
   const [selectedCylinders, setSelectedCylinders] = useState<string>("all");
   const [selectedDrive, setSelectedDrive] = useState<string>("all");
   const [showUnavailable, setShowUnavailable] = useState<boolean>(false);
-
-  // Location and date/time filters - Initialize from URL params
-  const [pickupLocation, setPickupLocation] = useState(
-    searchParams.get("pickupLocation") || ""
-  );
-  const [pickupAt, setPickupAt] = useState(
-    searchParams.get("pickupAt") ||
-      new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)
-  );
-  const [returnAt, setReturnAt] = useState(
-    searchParams.get("returnAt") ||
-      new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString().slice(0, 16)
-  );
 
   // Check if rental details were provided from URL params (collapse by default if they were)
   const hasRentalDetailsFromUrl =
@@ -286,7 +286,14 @@ export default function CarsPage() {
                       <Input
                         type="datetime-local"
                         value={pickupAt}
-                        onChange={(e) => setPickupAt(e.target.value)}
+                        onChange={(e) => {
+                          const newPickupAt = e.target.value;
+                          setPickupAt(newPickupAt);
+                          // If return date is before new pickup date, adjust it
+                          if (returnAt < newPickupAt) {
+                            setReturnAt(newPickupAt);
+                          }
+                        }}
                         bg="white"
                       />
                     </ChakraField.Root>

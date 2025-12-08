@@ -61,19 +61,19 @@ export function useCars(search?: string, limit = 200) {
 }
 
 /**
- * Hook to fetch booked car IDs with aggressive caching
+ * Hook to fetch booked car IDs with optional date range filtering
  */
-export function useBookedCarIds() {
+export function useBookedCarIds(pickupAt?: string, returnAt?: string) {
   return useQuery({
-    queryKey: carQueryKeys.booked(),
+    queryKey: pickupAt && returnAt ? [...carQueryKeys.booked(), pickupAt, returnAt] : carQueryKeys.booked(),
     queryFn: async () => {
-      logger.debug("Fetching booked car IDs");
+      logger.debug("Fetching booked car IDs", { pickupAt, returnAt });
       try {
-        const bookedIds = await getBookedCarIds();
-        logger.info(`Loaded ${bookedIds.length} booked car IDs`);
+        const bookedIds = await getBookedCarIds(pickupAt, returnAt);
+        logger.info(`Loaded ${bookedIds.length} booked car IDs`, { pickupAt, returnAt });
         return bookedIds;
       } catch (error) {
-        logger.error("Failed to fetch booked car IDs", error);
+        logger.error("Failed to fetch booked car IDs", error, { pickupAt, returnAt });
         throw error;
       }
     },
