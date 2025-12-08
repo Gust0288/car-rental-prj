@@ -38,7 +38,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Firefox"],
         contextOptions: {
-          // Use private browsing context
+          ignoreHTTPSErrors: true,
         },
       },
     },
