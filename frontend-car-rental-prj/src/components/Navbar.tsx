@@ -395,8 +395,99 @@ export const NavBar = () => {
       {/* Mobile Search and Menu */}
       <Box display={{ base: "block", md: "none" }} width="100%">
         {/* Mobile Search Bar */}
-        <Box px={4} py={3} borderTop="1px" borderColor="blue.400">
-          <Input placeholder="Search for cars..." width="100%" bg="white" />
+        <Box px={4} py={3} borderTop="1px" borderColor="blue.400" ref={wrapperRef} position="relative">
+          <Input 
+            placeholder="Search for cars..." 
+            width="100%" 
+            bg="white"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={async (e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === "Enter") {
+                try {
+                  const trimmed = search.trim();
+                  if (trimmed.length > 0) {
+                    setSuggestionsLoading(true);
+                    try {
+                      const resp = await carService.getAllCars(trimmed, 10);
+                      const data = resp?.data || [];
+                      setSuggestions(data as Car[]);
+                    } catch (fetchErr) {
+                      console.error("Search fetch error:", fetchErr);
+                      setSuggestions([]);
+                    } finally {
+                      setSuggestionsLoading(false);
+                    }
+                  } else {
+                    setSuggestions([]);
+                  }
+                } catch (err) {
+                  console.error("Search error:", err);
+                  setSuggestions([]);
+                }
+              }
+            }}
+          />
+          {suggestions && suggestions.length > 0 && (
+            <Box
+              position="absolute"
+              top="100%"
+              left={4}
+              right={4}
+              bg="white"
+              border="1px solid"
+              borderColor="gray.200"
+              borderRadius="md"
+              maxH="300px"
+              overflowY="auto"
+              zIndex={1000}
+              mt={1}
+            >
+              {suggestionsLoading ? (
+                <HStack p={3} justifyContent="center">
+                  <Spinner size="sm" />
+                  <Text fontSize="sm">Loading...</Text>
+                </HStack>
+              ) : (
+                <Box>
+                  {suggestions.map((c) => (
+                    <Box
+                      key={c.id}
+                      _hover={{ bg: "gray.50" }}
+                      cursor="pointer"
+                      px={3}
+                      py={2}
+                      onClick={() => {
+                        suppressNavRef.current = true;
+                        setSearch("");
+                        setSuggestions([]);
+                        navigate(`/car/${c.id}`);
+                      }}
+                    >
+                      <HStack gap={3}>
+                        {c.img_path ? (
+                          <Image
+                            src={c.img_path}
+                            boxSize="48px"
+                            objectFit="cover"
+                            borderRadius="md"
+                          />
+                        ) : null}
+                        <Box>
+                          <Text fontWeight="semibold">
+                            {c.make} {c.model}
+                          </Text>
+                          <Text fontSize="sm" color="gray.600">
+                            {c.year || ""} · {c.car_location || ""}
+                          </Text>
+                        </Box>
+                      </HStack>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          )}
         </Box>
 
         {/* Mobile Menu */}
