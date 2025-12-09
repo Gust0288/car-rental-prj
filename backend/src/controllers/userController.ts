@@ -16,15 +16,24 @@ export const signupUser = async (req: Request, res: Response) => {
     });
 
     const existingUser = await userPool.query(
-      "SELECT id FROM public.users WHERE email = $1",
-      [email]
+      "SELECT id, email, username FROM public.users WHERE email = $1 OR username = $2",
+      [email, username]
     );
 
     if (existingUser.rows.length > 0) {
-      logger.warn("Signup failed: User already exists", { email });
-      return res
-        .status(400)
-        .json({ error: "User already exists with this email" });
+      const user = existingUser.rows[0];
+      if (user.email === email) {
+        logger.warn("Signup failed: Email already exists", { email });
+        return res
+          .status(400)
+          .json({ error: "User already exists with this email" });
+      }
+      if (user.username === username) {
+        logger.warn("Signup failed: Username already exists", { username });
+        return res
+          .status(400)
+          .json({ error: "Username already taken" });
+      }
     }
 
     const saltRounds = 10;

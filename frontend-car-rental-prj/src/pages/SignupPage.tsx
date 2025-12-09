@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { httpClient } from "../services/httpClient";
 import { toaster, TOAST_DURATIONS } from "../utils/toaster";
 import { logger } from "../utils/logger";
+import { validatePassword } from "../utils/passwordValidator";
 
 // variables
 const CONTAINER_LAYOUT = {
@@ -49,6 +50,17 @@ const SignupPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const passwordValidation = validatePassword(formData.password);
+  if (!passwordValidation.isValid) {
+    toaster.create({
+      title: "Weak password",
+      description: passwordValidation.errors[0],
+      type: "error",
+      duration: TOAST_DURATIONS.short,
+    });
+    return;
+  }
 
     // Validate passwords match before submission
     if (formData.password !== formData.confirmPassword) {
