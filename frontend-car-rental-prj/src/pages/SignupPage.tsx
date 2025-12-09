@@ -49,6 +49,18 @@ const SignupPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate passwords match before submission
+    if (formData.password !== formData.confirmPassword) {
+      toaster.create({
+        title: "Password mismatch",
+        description: "Passwords do not match. Please try again.",
+        type: "error",
+        duration: TOAST_DURATIONS.short,
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -77,6 +89,7 @@ const SignupPage = () => {
       }
     } catch (error: unknown) {
       let errorMessage = "Something went wrong";
+      
 
       if (error && typeof error === "object") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
