@@ -143,6 +143,7 @@ const LoginPage = () => {
                     Email
                   </Text>
                   <Input
+                    data-testid="login-email"
                     name="email"
                     type="email"
                     placeholder="Email"
@@ -158,6 +159,7 @@ const LoginPage = () => {
                     Password
                   </Text>
                   <Input
+                    data-testid="login-password"
                     name="password"
                     type="password"
                     placeholder="Password"
@@ -169,6 +171,7 @@ const LoginPage = () => {
                 </Box>
 
                 <Button
+                  data-testid="login-submit-button"
                   type="submit"
                   colorPalette="gray"
                   size={FORM_STYLING.buttonSize}

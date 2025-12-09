@@ -293,7 +293,7 @@ const SingleCarView = () => {
         {/* Left column: car info */}
         <VStack gap={6} align="start" w="full">
           <HStack align="center" wrap="wrap" gap={3}>
-            <Heading size="xl">
+            <Heading data-testid="car-title" size="xl">
               {capitalizeString(car.make)} {capitalizeString(car.model)}
             </Heading>
             <Badge colorScheme="purple" fontSize="0.9em">
@@ -446,6 +446,7 @@ const SingleCarView = () => {
             <ChakraField.Root invalid={!!errors.pickupAt}>
               <ChakraField.Label>Pick up date and time</ChakraField.Label>
               <Input
+                data-testid="start-date"
                 type="datetime-local"
                 value={pickupAt}
                 onChange={(e) => setPickupAt(e.target.value)}
@@ -458,6 +459,7 @@ const SingleCarView = () => {
             <ChakraField.Root invalid={!!errors.returnAt}>
               <ChakraField.Label>Return date and time</ChakraField.Label>
               <Input
+                data-testid="end-date"
                 type="datetime-local"
                 value={returnAt}
                 onChange={(e) => setReturnAt(e.target.value)}
@@ -472,10 +474,13 @@ const SingleCarView = () => {
 
             <HStack justify="space-between">
               <Text color="gray.600">Price</Text>
-              <Heading size="md">{price > 0 ? `${price} DKK` : "--"}</Heading>
+              <Heading data-testid="car-price" size="md">
+                {price > 0 ? `${price} DKK` : "--"}
+              </Heading>
             </HStack>
 
             <Button
+              data-testid="book-car-button"
               onClick={handleBookClick}
               isLoading={submitting}
               disabled={hasErrors || rentalDays === 0}
@@ -584,6 +589,7 @@ const SingleCarView = () => {
               Cancel
             </Button>
             <Button
+              data-testid="confirm-booking-button"
               variant="primary"
               onClick={confirmBooking}
               isLoading={submitting}
