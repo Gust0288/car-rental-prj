@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { pool, userPool } from "../config/database.js";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 
 // Mark overdue bookings as expired (idempotent)
 async function expireOverdueBookings() {
@@ -16,13 +17,17 @@ async function expireOverdueBookings() {
 }
 
 // Create a new booking
-export const createBooking = async (req: Request, res: Response) => {
-  const { car_id, user_id, pickup_at, return_at } = req.body;
+export const createBooking = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { car_id, pickup_at, return_at } = req.body;
+  const user_id = req.userId; // Use authenticated user's ID
 
   // Validate required fields
-  if (!car_id || !user_id || !pickup_at || !return_at) {
+  if (!car_id || !pickup_at || !return_at) {
     return res.status(400).json({
-      error: "Missing required fields: car_id, user_id, pickup_at, return_at",
+      error: "Missing required fields: car_id, pickup_at, return_at",
     });
   }
 
@@ -118,8 +123,29 @@ export const createBooking = async (req: Request, res: Response) => {
 };
 
 // Get all bookings for a user
-export const getUserBookings = async (req: Request, res: Response) => {
+export const getUserBookings = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const { userId } = req.params;
+  const requestingUserId = Number(req.userId);
+  const requestedUserId = parseInt(userId);
+
+  // Check if user is requesting their own bookings or is admin
+  if (requestingUserId !== requestedUserId) {
+    // Check if user is admin
+    const { rows: userRows } = await userPool.query(
+      `SELECT admin FROM public.users WHERE id = $1`,
+      [requestingUserId]
+    );
+
+    if (userRows.length === 0 || parseInt(userRows[0].admin) !== 1) {
+      return res.status(403).json({
+        error: "Forbidden",
+        message: "You can only view your own bookings",
+      });
+    }
+  }
 
   try {
     // Ensure overdue bookings are marked as expired
@@ -181,8 +207,12 @@ export const getUserBookings = async (req: Request, res: Response) => {
 };
 
 // Get a specific booking by ID
-export const getBookingById = async (req: Request, res: Response) => {
+export const getBookingById = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const { id } = req.params;
+  const requestingUserId = req.userId;
 
   try {
     // Ensure overdue bookings are marked as expired
@@ -210,6 +240,22 @@ export const getBookingById = async (req: Request, res: Response) => {
     }
 
     const booking = bookings[0];
+
+    // Check if user owns this booking or is admin
+    if (booking.user_id !== Number(req.userId)) {
+      // Check if user is admin
+      const { rows: userRows } = await userPool.query(
+        `SELECT admin FROM public.users WHERE id = $1`,
+        [Number(req.userId)]
+      );
+
+      if (userRows.length === 0 || parseInt(userRows[0].admin) !== 1) {
+        return res.status(403).json({
+          error: "Forbidden",
+          message: "You can only view your own bookings",
+        });
+      }
+    }
 
     // Get car details from cars database
     const { rows: cars } = await pool.query(
@@ -281,10 +327,50 @@ export const updateBookingStatus = async (req: Request, res: Response) => {
 };
 
 // Cancel a booking
-export const cancelBooking = async (req: Request, res: Response) => {
+export const cancelBooking = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   const { id } = req.params;
+  const requestingUserId = req.userId;
 
   try {
+    // First check if booking exists and get its user_id
+    const { rows: bookingRows } = await userPool.query(
+      `SELECT user_id, status FROM bookings WHERE id = $1`,
+      [id]
+    );
+
+    if (bookingRows.length === 0) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    const booking = bookingRows[0];
+
+    // Check if user owns this booking or is admin
+    if (booking.user_id !== Number(req.userId)) {
+      // Check if user is admin
+      const { rows: userRows } = await userPool.query(
+        `SELECT admin FROM public.users WHERE id = $1`,
+        [Number(req.userId)]
+      );
+
+      if (userRows.length === 0 || parseInt(userRows[0].admin) !== 1) {
+        return res.status(403).json({
+          error: "Forbidden",
+          message: "You can only cancel your own bookings",
+        });
+      }
+    }
+
+    // Check if booking can be canceled (not already returned/expired)
+    if (["returned", "expired", "canceled"].includes(booking.status)) {
+      return res.status(400).json({
+        error: "Cannot cancel booking",
+        message: `Booking is already ${booking.status}`,
+      });
+    }
+
     const { rows } = await userPool.query(
       `UPDATE bookings 
        SET status = 'canceled', updated_at = now() 
@@ -292,10 +378,6 @@ export const cancelBooking = async (req: Request, res: Response) => {
        RETURNING *`,
       [id]
     );
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Booking not found" });
-    }
 
     res.json(rows[0]);
   } catch (error) {
@@ -338,8 +420,39 @@ export const checkAvailability = async (req: Request, res: Response) => {
   }
 };
 
+// Get booked car IDs for availability checking (public endpoint)
+export const getBookedCarIds = async (req: Request, res: Response) => {
+  const { pickup_at, return_at } = req.query;
+
+  try {
+    let query = `
+      SELECT DISTINCT car_id
+      FROM bookings
+      WHERE status IN ('pending', 'confirmed', 'in_progress')
+    `;
+    const params: any[] = [];
+
+    // If date range is provided, filter by overlapping bookings
+    if (pickup_at && return_at) {
+      query += ` AND tstzrange(pickup_at, return_at, '[)') && tstzrange($1::timestamptz, $2::timestamptz, '[)')`;
+      params.push(pickup_at, return_at);
+    }
+
+    const { rows } = await userPool.query(query, params);
+    const bookedCarIds = rows.map((row) => parseInt(row.car_id));
+
+    res.json(bookedCarIds);
+  } catch (error) {
+    console.error("Error fetching booked car IDs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // Get all active bookings (for filtering booked cars)
-export const getAllBookings = async (req: Request, res: Response) => {
+export const getAllBookings = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     // Ensure overdue bookings are marked as expired
     await expireOverdueBookings();
@@ -363,7 +476,7 @@ export const getAllBookings = async (req: Request, res: Response) => {
       FROM bookings b
       LEFT JOIN users u ON b.user_id = u.id
       WHERE b.status IN ('pending', 'confirmed', 'in_progress')`;
-    
+
     const params: (string | string[])[] = [];
 
     // If date range is provided, only return bookings that conflict with this range

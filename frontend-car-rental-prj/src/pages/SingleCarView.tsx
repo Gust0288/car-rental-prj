@@ -223,7 +223,6 @@ const SingleCarView = () => {
     try {
       console.log("📤 Sending booking request:", {
         car_id: car.id,
-        user_id: user.id,
         pickup_location_id: car.car_location,
         return_location_id: car.car_location,
         pickup_at: new Date(pickupAt).toISOString(),
@@ -232,7 +231,6 @@ const SingleCarView = () => {
 
       const response = await httpClient.post("/bookings", {
         car_id: car.id,
-        user_id: user.id,
         pickup_location_id: car.car_location,
         return_location_id: car.car_location,
         pickup_at: new Date(pickupAt).toISOString(),

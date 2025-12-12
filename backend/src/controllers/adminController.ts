@@ -39,12 +39,10 @@ export const softDeleteUser = async (req: Request, res: Response) => {
   }
 };
 
-// Placeholder: list bookings for a user (admin). Adjust query to match your bookings schema.
 export const listUserBookings = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
-    // Example query - replace with real bookings table/columns
     const { rows } = await userPool.query(
       `SELECT * FROM public.bookings WHERE user_id = $1 ORDER BY id ASC`,
       [userId]

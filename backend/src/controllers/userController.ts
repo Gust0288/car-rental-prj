@@ -156,7 +156,7 @@ export const getUserProfile = async (
     });
 
     // Check if the authenticated user is requesting their own profile
-    if (req.userId !== parseInt(userId)) {
+    if (Number(req.userId) !== parseInt(userId)) {
       logger.warn("Profile access denied: Forbidden", {
         userId,
         requestingUserId: req.userId,
@@ -201,7 +201,7 @@ export const updateUserProfile = async (
     });
 
     // Check if the authenticated user is updating their own profile
-    if (req.userId !== parseInt(userId)) {
+    if (Number(req.userId) !== parseInt(userId)) {
       logger.warn("Profile update denied: Forbidden", {
         userId,
         requestingUserId: req.userId,
@@ -247,7 +247,7 @@ export const deleteUser = async (req: AuthenticatedRequest, res: Response) => {
     });
 
     // Check if the authenticated user is deleting their own account
-    if (req.userId !== parseInt(userId)) {
+    if (Number(req.userId) !== parseInt(userId)) {
       logger.warn("Account deletion denied: Forbidden", {
         userId,
         requestingUserId: req.userId,

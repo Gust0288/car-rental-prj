@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authenticateToken, requireAdmin } from "../middleware/auth.js";
 import {
   createBooking,
   getUserBookings,
@@ -6,30 +7,27 @@ import {
   updateBookingStatus,
   cancelBooking,
   checkAvailability,
+  getBookedCarIds,
   getAllBookings,
 } from "../controllers/bookingController.js";
 
 const router = Router();
 
-// Create a new booking
-router.post("/", createBooking);
-
-// Check car availability
+// Public routes (no authentication required)
 router.get("/availability", checkAvailability);
+router.get("/booked-car-ids", getBookedCarIds);
 
-// Get all active bookings
-router.get("/", getAllBookings);
+// Protected routes (require authentication)
+router.use(authenticateToken);
 
-// Get all bookings for a specific user
-router.get("/user/:userId", getUserBookings);
+// User booking operations
+router.post("/", createBooking); // Create booking for authenticated user
+router.get("/user/:userId", getUserBookings); // Get bookings for specific user (user can only see their own, admin can see any)
+router.get("/:id", getBookingById); // Get specific booking (user can only see their own, admin can see any)
+router.patch("/:id/cancel", cancelBooking); // Cancel booking (user can only cancel their own, admin can cancel any)
 
-// Get a specific booking by ID
-router.get("/:id", getBookingById);
-
-// Update booking status
-router.patch("/:id/status", updateBookingStatus);
-
-// Cancel a booking
-router.patch("/:id/cancel", cancelBooking);
+// Admin-only routes
+router.get("/", requireAdmin, getAllBookings); // Get all bookings (admin only)
+router.patch("/:id/status", requireAdmin, updateBookingStatus); // Update booking status (admin only)
 
 export default router;

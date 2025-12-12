@@ -35,35 +35,18 @@ export async function getBookedCarIds(
     if (pickupAt) params.pickup_at = pickupAt;
     if (returnAt) params.return_at = returnAt;
 
-    // Fetch all bookings with optional date range for availability checking
-    const { data } = await httpClient.get<Booking[]>("/bookings", {
-      params,
-    });
-
-    console.log("Raw bookings data:", data);
-
-    // Filter active bookings (not canceled or returned)
-    const activeStatuses = ["pending", "confirmed", "in_progress"];
-    const activeBookings = data.filter((booking) =>
-      activeStatuses.includes(booking.status)
+    // Fetch booked car IDs directly (no booking details exposed)
+    const { data } = await httpClient.get<number[]>(
+      "/bookings/booked-car-ids",
+      {
+        params,
+      }
     );
 
-    console.log("Active bookings:", activeBookings);
-
-    // Convert car_id to number to ensure type consistency
-    const bookedCarIds = activeBookings.map((booking) =>
-      Number(booking.car_id)
-    );
-
-    console.log("Booked car IDs (with duplicates):", bookedCarIds);
-
-    // Return unique car IDs
-    const uniqueIds = [...new Set(bookedCarIds)];
-    console.log("Unique booked car IDs:", uniqueIds);
-
-    return uniqueIds;
+    console.log("Booked car IDs:", data);
+    return data;
   } catch (error) {
-    console.error("Failed to fetch booked cars:", error);
+    console.error("Error fetching booked car IDs:", error);
     return [];
   }
 }
